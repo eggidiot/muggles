@@ -49,7 +49,10 @@ public interface Constants {
 	 * 字符串占位符
 	 */
 	String STR_PLACEHOLDER = "%s";
-
+    /**
+     * 空对象
+     */
+    Object EMPTY_OBJ = new Object();
 
     //=======================格式配置信息=========================
     /**
