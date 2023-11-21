@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.muggles.fun</groupId>
+        <artifactId>muggles-common</artifactId>
+        <version>0.9.0</version>
+    </parent>
+    <description>基础数据结构、接口定义</description>
+    <artifactId>muggles-basic</artifactId>
+
+    <!--尽可能不要依赖别的jar包-->
+    <dependencies>
+        <!--lombok优化代码风格-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
