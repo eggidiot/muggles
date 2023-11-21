@@ -10,11 +10,13 @@
     </parent>
     <packaging>pom</packaging>
     <description>麻瓜项目通用模块集合</description>
+    <artifactId>muggles-common</artifactId>
     <modules>
         <!--麻瓜工具箱-->
         <module>muggles-tools</module>
+        <!--麻瓜基础模块-->
         <module>muggles-basic</module>
+        <!--麻瓜核心模块-->
+        <module>muggles-core</module>
     </modules>
-    <artifactId>muggles-common</artifactId>
-
 </project>
