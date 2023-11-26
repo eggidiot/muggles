@@ -5,23 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.muggles.fun</groupId>
-        <artifactId>muggles-dependencies</artifactId>
+        <artifactId>muggles</artifactId>
         <version>0.9.0</version>
-        <relativePath>/muggles-dependencies</relativePath>
     </parent>
-    <artifactId>muggles</artifactId>
     <packaging>pom</packaging>
-    <description>
-        麻瓜项目，赋能麻瓜，享乐编码
-    </description>
+    <description>进阶组件模块</description>
     <modules>
-        <!--三方依赖-->
-        <module>muggles-dependencies</module>
-        <!--通用功能模块-->
-        <module>muggles-common</module>
-        <module>muggles-ability</module>
-        <module>muggles-advance</module>
+        <module>muggles-process</module>
     </modules>
-
+    <artifactId>muggles-advance</artifactId>
 
 </project>
