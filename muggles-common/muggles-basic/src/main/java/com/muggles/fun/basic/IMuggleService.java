@@ -45,7 +45,7 @@ public interface IMuggleService<T> {
      * @param t 对象实体
      * @return  Boolean
      */
-    Boolean create(T t);
+    Boolean save(T t);
 
     /**
      * 根据id更新实体
@@ -60,7 +60,7 @@ public interface IMuggleService<T> {
      * @return  Boolean
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam>Boolean updateById(T t,C param);
+    <C extends MuggleParam>Boolean update(T t,C param);
 
     /**
      * 根据id删除记录
@@ -68,11 +68,37 @@ public interface IMuggleService<T> {
      * @return  Boolean
      */
     Boolean removeById(Serializable id);
-
     /**
      * 批量保存实体
      * @param list  实体记录
-     * @return
+     * @return  Boolean
      */
     Boolean saveBatch(List<T> list);
+    /**
+     * 根据实体id批量更新实体
+     * @param list  实体记录
+     * @return  Boolean
+     */
+    Boolean updateBatchById(List<T> list);
+    /**
+     * 将指定条件的记录批量更新诚实体非null字段
+     * @param list  实体记录
+     * @param param 更新条件
+     * @return  Boolean
+     * @param <C>   条件泛型
+     */
+    <C extends MuggleParam>Boolean updateBatch(List<T> list,C param);
+    /**
+     * 根据实体id批量插入或者更新实体
+     * @param list  实体记录
+     * @return  Boolean
+     */
+    Boolean saveOrUpdateBatchById(List<T> list);
+
+    /**
+     * 根据id集合批量删除记录
+     * @param ids   实体id集合
+     * @return  Boolean
+     */
+    Boolean removeBatchById(List<Serializable> ids);
 }
