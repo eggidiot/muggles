@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+    com.fline.tp.core.config.JacksonConfig,\
+    com.fline.tp.core.encrypt.JasyptConfig,\
+    com.fline.tp.core.config.WebMvcConfig,\
+    com.fline.tp.core.config.AppStartedEventListener

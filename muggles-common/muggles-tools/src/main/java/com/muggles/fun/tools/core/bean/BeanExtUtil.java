@@ -1,10 +1,11 @@
-package com.muggles.fun.tools.core;
+package com.muggles.fun.tools.core.bean;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ReflectUtil;
+import lombok.experimental.UtilityClass;
 
 import java.beans.PropertyDescriptor;
 import java.util.List;
@@ -15,12 +16,8 @@ import java.util.stream.Collectors;
 /**
  * Bean对象属性扩展工具
  */
+@UtilityClass
 public class BeanExtUtil {
-
-	/**
-	 * 私有化构造器避免外部调用
-	 */
-	private BeanExtUtil(){}
 
     /**
      * 为对象动态扩展属性
@@ -29,7 +26,7 @@ public class BeanExtUtil {
      * @param addProperties	附加属性
      * @return	Object
      */
-    public static Object getObject(Object dest, Map<String, Object> addProperties) {
+    public Object getObject(Object dest, Map<String, Object> addProperties) {
         PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(ClassUtil.getClass(dest));
         Map<String, Class<?>> propertyMap = MapUtil.newHashMap();
         for (PropertyDescriptor d : descriptors) {
@@ -55,7 +52,7 @@ public class BeanExtUtil {
 	 * @return	T
 	 * @param <T>	泛型
 	 */
-	public static <T>T addExtra(T dest, Map<String, Object> addProperties) {
+	public <T>T addExtra(T dest, Map<String, Object> addProperties) {
 		return (T) getObject(dest,addProperties);
 	}
 
@@ -67,7 +64,7 @@ public class BeanExtUtil {
 	 * @return	List<T>
 	 * @param <T>	泛型
 	 */
-	public static <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp,String childField) {
+	public <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp,String childField) {
 		if (CollUtil.isEmpty(list)) {
 			return CollUtil.newArrayList();
 		}
@@ -127,7 +124,7 @@ public class BeanExtUtil {
 	 * @return	List<T>
 	 * @param <T>	泛型
 	 */
-	public static <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp) {
+	public <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp) {
 		return decorateTree(list,prop,parentProp,"children");
 	}
 }

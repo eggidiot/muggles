@@ -1,4 +1,4 @@
-package com.muggles.fun.core.config;
+package com.muggles.fun.core.config.time;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -84,7 +84,7 @@ public class DateTimeModule extends SimpleModule {
                 return;
             }
             //2.判断是否时间戳方式序列化
-            if (timestamp) {
+            if (Boolean.TRUE.equals(timestamp)) {
                 g.writeObject(LocalDateTimeUtil.toEpochMilli(value));
             } else {
                 g.writeString(LocalDateTimeUtil.format(value, format));
@@ -116,12 +116,12 @@ public class DateTimeModule extends SimpleModule {
         @Override
         public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             //1.时间戳格式
-            if (timestamp) {
+            if (Boolean.TRUE.equals(timestamp)) {
                 return LocalDateTimeUtil.of(p.getLongValue());
             }
             //2.自定义格式
             String time = p.getValueAsString();
-            return LocalDateTimeUtil.parse(time, Constants.DATE_FORMAT);
+            return LocalDateTimeUtil.parse(time, format);
         }
     }
 
