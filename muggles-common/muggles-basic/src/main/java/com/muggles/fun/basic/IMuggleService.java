@@ -53,7 +53,6 @@ public interface IMuggleService<T> {
      * @return  Boolean
      */
     Boolean updateById(T t);
-
     /**
      * 将指定条件的记录更新诚实体非null字段
      * @param t     实体记录
@@ -62,4 +61,18 @@ public interface IMuggleService<T> {
      * @param <C>   条件泛型
      */
     <C extends MuggleParam>Boolean updateById(T t,C param);
+
+    /**
+     * 根据id删除记录
+     * @param id    实体记录id
+     * @return  Boolean
+     */
+    Boolean removeById(Serializable id);
+
+    /**
+     * 批量保存实体
+     * @param list  实体记录
+     * @return
+     */
+    Boolean saveBatch(List<T> list);
 }

@@ -21,7 +21,7 @@ import java.util.Map;
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
-public class MuggleParam<T> {
+public abstract class MuggleParam<T> {
     /**
      * 连接符
      */
