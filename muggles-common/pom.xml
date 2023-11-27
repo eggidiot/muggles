@@ -18,5 +18,6 @@
         <module>muggles-basic</module>
         <!--麻瓜核心模块-->
         <module>muggles-core</module>
+        <module>muggles-repo</module>
     </modules>
 </project>

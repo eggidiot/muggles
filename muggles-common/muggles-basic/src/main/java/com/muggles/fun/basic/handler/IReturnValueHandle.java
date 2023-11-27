@@ -1,6 +1,5 @@
 package com.muggles.fun.basic.handler;
 
-import java.util.List;
 import java.util.function.Function;
 
 /**
