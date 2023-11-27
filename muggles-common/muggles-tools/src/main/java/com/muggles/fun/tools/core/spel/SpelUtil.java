@@ -32,20 +32,20 @@ public class SpelUtil {
      * @param spel el表达式
      * @return String
      */
-    String variableName(String spel) {
+    public String variableName(String spel) {
         String regex = "\\w+";
         return ReUtil.getGroup0(regex, spel);
     }
 
     /**
-     * 根据SPEL表达式将Token授权信息设置回原始对象
+     * 根据SPEL表达式将外部信息设置回原始对象
      *
      * @param spel   el表达式
      * @param value  el表达式对应的原值
-     * @param target 授权对象的取值所在对象
+     * @param target 目标对象
      * @return Object
      */
-    Object wrapperInfo(String spel, Object value, Object target) {
+    public Object wrapperInfo(String spel, Object value, Object target) {
         ExpressionParser parser = new SpelExpressionParser();
         EvaluationContext context = new StandardEvaluationContext(value);
         context.setVariable(variableName(spel), value);
