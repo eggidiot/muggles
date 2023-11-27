@@ -3,23 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.muggles.fun</groupId>
-        <artifactId>muggles-advance</artifactId>
+        <artifactId>muggles-process</artifactId>
         <version>0.9.0</version>
     </parent>
-    <packaging>pom</packaging>
-    <description>流程组件</description>
 
-
-    <modules>
-        <!-- 流程基础 -->
-        <module>muggles-process-basic</module>
-        <!-- 流程基于 Activiti 实现 -->
-        <module>muggles-process-activiti</module>
-    </modules>
-
-    <artifactId>muggles-process</artifactId>
+    <artifactId>muggles-process-basic</artifactId>
+    <packaging>jar</packaging>
 
 
 </project>
