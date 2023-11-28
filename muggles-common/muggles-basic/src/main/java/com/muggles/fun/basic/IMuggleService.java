@@ -101,4 +101,12 @@ public interface IMuggleService<T> {
      * @return  Boolean
      */
     Boolean removeBatchById(List<Serializable> ids);
+
+    /**
+     * 根据条件删除实体记录
+     * @param param
+     * @return
+     * @param <C>
+     */
+    <C extends MuggleParam>Boolean remove(C param);
 }
