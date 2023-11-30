@@ -19,7 +19,10 @@ public interface IValueHandle extends Function {
      * @param chain 多个处理器形成的责任链
      * @return  新返回值
      */
-    default Object handle(Object value, IValueProcessChain chain){
-        return apply(value);
+    default Object handle(Object value, IValueHandleChain chain){
+        if (support(value)) {
+            value = apply(value);
+        }
+        return chain.process(value);
     }
 }
