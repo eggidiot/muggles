@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.muggles.fun</groupId>
+        <artifactId>muggles-repo</artifactId>
+        <version>0.9.0</version>
+    </parent>
+
+    <description>持久层基础模块，定义基本数据结构和接口</description>
+    <artifactId>muggles-repo-basic</artifactId>
+
+    <dependencies>
+        <!--mybatis依赖-->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+        </dependency>
+
+        <!--麻瓜基础模块-->
+        <dependency>
+            <groupId>com.muggles.fun</groupId>
+            <artifactId>muggles-basic</artifactId>
+            <version>${muggles.version}</version>
+        </dependency>
+    </dependencies>
+</project>

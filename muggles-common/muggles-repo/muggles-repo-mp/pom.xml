@@ -5,16 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.muggles.fun</groupId>
-        <artifactId>muggles-common</artifactId>
+        <artifactId>muggles-repo</artifactId>
         <version>0.9.0</version>
     </parent>
-    <description>持久层模块</description>
-    <artifactId>muggles-repo</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <!--持久层基础模块-->
-        <module>muggles-repo-basic</module>
-        <module>muggles-repo-mp</module>
-    </modules>
+    <description>基于mybatis-plus方案的持久层扩展</description>
+    <artifactId>muggles-repo-mp</artifactId>
 
 </project>
