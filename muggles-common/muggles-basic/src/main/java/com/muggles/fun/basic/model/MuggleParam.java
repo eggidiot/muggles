@@ -59,7 +59,7 @@ public abstract class MuggleParam<T> {
      */
     protected List<MuggleParam<T>> relations = new ArrayList<>();
     /**
-     * 查询对象字段
+     * 查询对象字段限定
      */
     protected T selectors;
     /**
