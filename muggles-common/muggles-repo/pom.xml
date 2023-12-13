@@ -14,6 +14,7 @@
     <modules>
         <!--持久层基础模块-->
         <module>muggles-repo-basic</module>
+        <!--基于mp的实现-->
         <module>muggles-repo-mp</module>
     </modules>
 
