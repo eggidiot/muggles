@@ -1,7 +1,8 @@
 package com.muggles.fun.tools.core.test;
 
-import java.math.BigDecimal;
+import lombok.Data;
 
+@Data
 public class AccountService {
     private int amount = 100;
 
@@ -14,9 +15,5 @@ public class AccountService {
         System.out.println("开始折扣扣款，请稍等。。。");
         amount  = amount -(money *rate);
         return getAmount();
-    }
-
-    public int getAmount(){
-        return amount;
     }
 }

@@ -9,8 +9,10 @@ import java.lang.reflect.Method;
 public interface IEnhanceBefore {
     /**
      * 执行拦截逻辑
-     * @param args  方法调用参数
-     * @return
+     * @param obj           当前this对象
+     * @param method        执行方法
+     * @param args          执行参数
+     * @return              方法返回值,建议返回原值
      */
-    boolean before(Method method, Object[] args);
+    boolean before(Object obj,Method method, Object[] args);
 }

@@ -79,9 +79,9 @@ public class MethodEnhanceUtil {
             //2.获取对应的后置拦截器
             IEnhanceAfter after = afterMap.get(method);
             //3.拦截器处理逻辑
-            Assert.isTrue(before == null || before.before(method, args), () -> new IllegalStateException("前置处理异常"));
+            Assert.isTrue(before == null || before.before(obj,method, args), () -> new IllegalStateException("前置处理异常"));
             if (after != null) {
-                return after.after(method, args, method.invoke(target, args));
+                return after.after(obj,method, args, method.invoke(target, args));
             }
             return method.invoke(target, args);
         }
@@ -187,10 +187,10 @@ public class MethodEnhanceUtil {
         CglibProxyFactory factory = new CglibProxyFactory(t);
         Method[] methods = t.getClass().getDeclaredMethods();
         for (Method m: methods) {
-            factory.enhance(m,(method, args) -> {
+            factory.enhance(m,(obj,method, args) -> {
                     log.info("前置切面对象:{},方法:{},参数:{}",t,method.getName(),args);
                     return true;
-                },(method,args,value)->{
+                },(obj,method,args,value)->{
                     log.info("前置切面对象:{},方法:{},参数:{},返回值:{}",t,method.getName(),args,value);
                     return value;
                 }
