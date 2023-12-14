@@ -206,9 +206,8 @@ public class MethodEnhanceUtil {
      * @return 增强对象
      */
     public <T> T enhancer(T t, String method, IEnhanceBefore before, IEnhanceAfter after) {
-        CglibProxyFactory factory = new CglibProxyFactory(t);
-        factory.enhance(method,before,after);
-        return factory.get();
+        Method m = findMethod(t,method);
+        return enhancer(t,m,before,after);
     }
 
     /**
@@ -219,8 +218,11 @@ public class MethodEnhanceUtil {
      * @return 增强对象
      */
     public <T> T enhancer(T t, Method method, IEnhanceBefore before, IEnhanceAfter after) {
-        CglibProxyFactory cglibProxyFactory = new CglibProxyFactory(t);
-        return (T) cglibProxyFactory.getObject();
+        Assert.notNull(t,()->new IllegalStateException("指定对象不能为Null"));
+        Assert.notNull(t,()->new IllegalStateException("被增强的指定方法不能为Null"));
+        CglibProxyFactory factory = new CglibProxyFactory(t);
+        factory.enhance(method,before,after);
+        return factory.get();
     }
 
     /**
@@ -233,8 +235,7 @@ public class MethodEnhanceUtil {
      * @return
      */
     public <T> T enhancerBefore(IEnhanceBefore before, T t, String method) {
-        CglibProxyFactory cglibProxyFactory = new CglibProxyFactory(t);
-        return (T) cglibProxyFactory.getObject();
+        return enhancer(t,method,before,null);
     }
 
     /**
@@ -247,9 +248,7 @@ public class MethodEnhanceUtil {
      * @return
      */
     public <T> T enhancerBefore(IEnhanceBefore before, T t, Method method) {
-        CglibProxyFactory cglibProxyFactory = new CglibProxyFactory(t);
-        cglibProxyFactory.getBeforeMap().put(method, before);
-        return (T) cglibProxyFactory.getObject();
+        return enhancer(t,method,before,null);
     }
 
     /**
@@ -262,8 +261,7 @@ public class MethodEnhanceUtil {
      * @return
      */
     public <T> T enhancerAfter(T t, String method, IEnhanceAfter after) {
-        CglibProxyFactory cglibProxyFactory = new CglibProxyFactory(t);
-        return (T) cglibProxyFactory.getObject();
+        return enhancer(t,method,null,after);
     }
 
     /**
@@ -276,8 +274,7 @@ public class MethodEnhanceUtil {
      * @return
      */
     public <T> T enhancerAfter(T t, Method method, IEnhanceAfter after) {
-        CglibProxyFactory cglibProxyFactory = new CglibProxyFactory(t);
-        return (T) cglibProxyFactory.getObject();
+        return enhancer(t,method,null,after);
     }
 
     /**
@@ -340,7 +337,6 @@ public class MethodEnhanceUtil {
         try {
             return tClass.getMethod(method, paramTypes);
         } catch (NoSuchMethodException e) {
-            log.error("获取指定方法出错:{}", e);
             return null;
         }
     }
