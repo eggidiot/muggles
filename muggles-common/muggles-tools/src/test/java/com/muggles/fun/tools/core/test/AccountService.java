@@ -10,9 +10,10 @@ public class AccountService {
         amount  = amount-money;
     }
 
-    public void deductMoney(int money,int rate){
+    public int deductMoney(int money,int rate){
         System.out.println("开始折扣扣款，请稍等。。。");
         amount  = amount -(money *rate);
+        return getAmount();
     }
 
     public int getAmount(){
