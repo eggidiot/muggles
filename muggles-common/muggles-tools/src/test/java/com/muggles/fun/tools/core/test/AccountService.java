@@ -16,4 +16,10 @@ public class AccountService {
         amount  = amount -(money *rate);
         return getAmount();
     }
+
+    public int deductMoney1(int money,int rate){
+        System.out.println("开始折扣扣款，请稍等。。。");
+        amount  = amount -(money *rate);
+        return getAmount();
+    }
 }

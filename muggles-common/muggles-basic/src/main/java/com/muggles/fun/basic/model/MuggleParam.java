@@ -3,6 +3,7 @@ package com.muggles.fun.basic.model;
 import com.muggles.fun.basic.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
@@ -18,54 +19,58 @@ import java.util.Map;
  *
  * @param <T>
  */
-@Data
-@Accessors(chain = true)
 @NoArgsConstructor
-public abstract class MuggleParam<T> {
+public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
     /**
      * 连接符
      */
+    @Getter
     protected Constants.RelationType relationType = Constants.RelationType.AND;
     /**
      * 每页显示条数，默认 10
      */
+    @Getter
     protected long size = 10;
     /**
      * 当前页
      */
+    @Getter
     protected long current = 1;
     /**
      * 查询条件
      */
+    @Getter
     protected Map<String, Object> params = new HashMap<>();
     /**
      * 查询字段，
      */
+    @Getter
     protected List<String> fields = new ArrayList<>();
     /**
      * 排除字段
      */
+    @Getter
     protected List<String> excludes = new ArrayList<>();
     /**
      * 排序字段
      */
+    @Getter
     protected List<OrderBy> orderBys = new ArrayList<>();
     /**
      * groupBy字段
      */
+    @Getter
     protected List<String> groupBys = new ArrayList<>();
     /**
      * 查询子条件集合
      */
-    protected List<MuggleParam<T>> relations = new ArrayList<>();
+    @Getter
+    protected List<C> relations = new ArrayList<>();
     /**
      * 查询对象字段限定
      */
+    @Getter
     protected T selectors;
-    /**
-     * 默认是否包含一个排序方式
-     */
-    protected boolean defaultOrderBy = true;
 
     /**
      * 排序字段
@@ -92,5 +97,76 @@ public abstract class MuggleParam<T> {
         public boolean isAsc() {
             return getAsc() > Constants.DESC;
         }
+    }
+    /**
+     * 设置连接符
+     * @param relationType
+     */
+    public C setRelationType(Constants.RelationType relationType) {
+        this.relationType = relationType;
+        return (C) this;
+    }
+    /**
+     * 设置每页显示条数，默认 10
+     */
+    public C setSize(long size) {
+        this.size = size;
+        return (C) this;
+    }
+    /**
+     * 设置当前页
+     */
+    public C setCurrent(long current) {
+        this.current = current;
+        return (C) this;
+    }
+    /**
+     * 查询条件
+     */
+    public C setParams(Map<String, Object> params) {
+        this.params = params;
+        return (C) this;
+    }
+    /**
+     * 查询字段，
+     */
+    public C setFields(List<String> fields) {
+        this.fields = fields;
+        return (C) this;
+    }
+    /**
+     * 排除字段
+     */
+    public C setExcludes(List<String> excludes) {
+        this.excludes = excludes;
+        return (C) this;
+    }
+    /**
+     * 排序字段
+     */
+    public C setOrderBys(List<OrderBy> orderBys) {
+        this.orderBys = orderBys;
+        return (C) this;
+    }
+    /**
+     * groupBy字段
+     */
+    public C setGroupBys(List<String> groupBys) {
+        this.groupBys = groupBys;
+        return (C) this;
+    }
+    /**
+     * 查询子条件集合
+     */
+    public C setRelations(List<C> relations) {
+        this.relations = relations;
+        return (C) this;
+    }
+    /**
+     * 查询对象字段限定
+     */
+    public C setSelectors(T selectors) {
+        this.selectors = selectors;
+        return (C) this;
     }
 }
