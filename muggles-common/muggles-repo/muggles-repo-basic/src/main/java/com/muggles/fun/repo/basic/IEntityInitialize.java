@@ -7,10 +7,9 @@ public interface IEntityInitialize<T> {
 
     /**
      *
-     * @param t
-     * @return
+     * @return  实体对象
      */
-    default T init(T t){
-        return t;
+    default T init(){
+        return null;
     }
 }
