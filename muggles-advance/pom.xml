@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
     <description>进阶组件模块</description>
     <modules>
+        <!--流程组件-->
         <module>muggles-process</module>
     </modules>
     <artifactId>muggles-advance</artifactId>
