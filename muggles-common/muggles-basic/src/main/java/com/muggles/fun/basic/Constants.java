@@ -69,4 +69,41 @@ public interface Constants {
 	 * 默认框架组件ORDER值
 	 */
 	int DEFAULT_ORDER = 100;
+    /**
+     * 默认排序升序
+     */
+    int ASC = 1;
+    /**
+     * 默认排序降序
+     */
+    int DESC = 0;
+
+    /**
+     * 连接符枚举
+     */
+    enum RelationType {
+        /**
+         * 条件 and连接
+         */
+        AND,
+        /**
+         * 条件 or连接
+         */
+        OR;
+
+        /**
+         * 根据枚举名称获取枚举对象
+         *
+         * @param name 字段名称
+         * @return RelationType
+         */
+        public static RelationType getNameIgnoreCase(String name) {
+            for (RelationType type : RelationType.values()) {
+                if (type.name().equalsIgnoreCase(name)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+    }
 }

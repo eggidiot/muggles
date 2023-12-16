@@ -2,12 +2,14 @@ package com.muggles.fun.basic.exception;
 
 import com.muggles.fun.basic.Constants;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 业务基本异常，一般用于定义非正常业务流程状态
  *
  * @author Lenovo
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class MugglesBizException extends RuntimeException {
 
@@ -37,7 +39,7 @@ public class MugglesBizException extends RuntimeException {
 	 *
 	 * @param message 错误提示信息构造方法 占位符用{}的方式提供
 	 * @param args    参数字符串数组
-	 * @return
+	 * @return	MugglesBizException
 	 */
 	public static MugglesBizException messageOf(String message, String... args) {
 		return new MugglesBizException(message, args);
@@ -46,8 +48,8 @@ public class MugglesBizException extends RuntimeException {
 	/**
 	 * 包装其他异常信息
 	 *
-	 * @param message
-	 * @param ex
+	 * @param message	异常文本
+	 * @param ex		运行时异常
 	 */
 	public MugglesBizException(String message, Throwable ex) {
 		super(message, ex);
@@ -67,9 +69,9 @@ public class MugglesBizException extends RuntimeException {
 	 * <p>
 	 * 如果占位符数量和参数数量对应不上，则会抛IllegalFormatConversionException 异常
 	 *
-	 * @param message
-	 * @param strArgs
-	 * @return
+	 * @param message	异常文本
+	 * @param strArgs	异常参数
+	 * @return			异常信息
 	 */
 	private static String fillMessage(String message, String... strArgs) {
 		if (message == null || message.isEmpty()) {

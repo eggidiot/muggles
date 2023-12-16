@@ -1,4 +1,4 @@
-package com.muggles.fun.tools.core;
+package com.muggles.fun.tools.core.bean;
 
 import net.sf.cglib.beans.BeanGenerator;
 import net.sf.cglib.beans.BeanMap;

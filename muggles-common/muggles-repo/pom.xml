@@ -5,20 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.muggles.fun</groupId>
-        <artifactId>muggles</artifactId>
+        <artifactId>muggles-common</artifactId>
         <version>0.9.0</version>
     </parent>
+    <description>持久层模块</description>
+    <artifactId>muggles-repo</artifactId>
     <packaging>pom</packaging>
-    <description>麻瓜项目通用模块集合</description>
-    <artifactId>muggles-common</artifactId>
     <modules>
-        <!--麻瓜工具箱-->
-        <module>muggles-tools</module>
-        <!--麻瓜基础模块-->
-        <module>muggles-basic</module>
-        <!--麻瓜核心模块-->
-        <module>muggles-core</module>
-        <!--持久层模块-->
-        <module>muggles-repo</module>
+        <!--持久层基础模块-->
+        <module>muggles-repo-basic</module>
+        <!--基于mp的实现-->
+        <module>muggles-repo-mp</module>
     </modules>
+
 </project>

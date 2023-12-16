@@ -1,10 +1,12 @@
-package com.muggles.fun.tools.core;
+package com.muggles.fun.tools.core.bean;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ReflectUtil;
+import lombok.experimental.UtilityClass;
 
 import java.beans.PropertyDescriptor;
 import java.util.List;
@@ -15,12 +17,8 @@ import java.util.stream.Collectors;
 /**
  * Bean对象属性扩展工具
  */
+@UtilityClass
 public class BeanExtUtil {
-
-	/**
-	 * 私有化构造器避免外部调用
-	 */
-	private BeanExtUtil(){}
 
     /**
      * 为对象动态扩展属性
@@ -29,7 +27,7 @@ public class BeanExtUtil {
      * @param addProperties	附加属性
      * @return	Object
      */
-    public static Object getObject(Object dest, Map<String, Object> addProperties) {
+    public Object getObject(Object dest, Map<String, Object> addProperties) {
         PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(ClassUtil.getClass(dest));
         Map<String, Class<?>> propertyMap = MapUtil.newHashMap();
         for (PropertyDescriptor d : descriptors) {
@@ -55,10 +53,23 @@ public class BeanExtUtil {
 	 * @return	T
 	 * @param <T>	泛型
 	 */
-	public static <T>T addExtra(T dest, Map<String, Object> addProperties) {
+	public <T>T addProps(T dest, Map<String, Object> addProperties) {
 		return (T) getObject(dest,addProperties);
 	}
 
+	/**
+	 * 为对象动态添加属性
+	 * @param dest		目标对象
+	 * @param field		属性名称
+	 * @param value		属性值
+	 * @return	T
+	 * @param <T>		泛型
+	 */
+	public <T>T addProp(T dest, String field,Object value) {
+		Map<String, Object> propFields = MapUtil.newHashMap();
+		propFields.put(field,value);
+		return (T) getObject(dest, propFields);
+	}
 	/**
 	 * 根据字段映射装饰成树形结构
 	 * @param list			集合对象
@@ -67,7 +78,7 @@ public class BeanExtUtil {
 	 * @return	List<T>
 	 * @param <T>	泛型
 	 */
-	public static <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp,String childField) {
+	public <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp,String childField) {
 		if (CollUtil.isEmpty(list)) {
 			return CollUtil.newArrayList();
 		}
@@ -78,9 +89,7 @@ public class BeanExtUtil {
 			if (ReflectUtil.hasField(t.getClass(),childField)){
 				//1.1.1要求对象有一个子集集合的属性，方便起见，指定是List类型的集合，不接受Set，Collect等集合
 				Class<?> clz = ReflectUtil.getField(t.getClass(),childField).getType();
-				if (!List.class.isAssignableFrom(clz)){
-					throw new IllegalArgumentException("指定字段名称绑定了非list类型成员");
-				}
+				Assert.isTrue(List.class.isAssignableFrom(clz), ()->new IllegalArgumentException("指定字段名称绑定了非list类型成员"));
 				//1.1.2子集集合若未初始化，进行初始化
 				if (ReflectUtil.getFieldValue(t,childField) == null) {
 					ReflectUtil.setFieldValue(t, childField, CollUtil.newArrayList());
@@ -93,15 +102,13 @@ public class BeanExtUtil {
 				return t;
 			} else {//1.2.需要添加子集集合字段，采用插桩技术，动态添加字段
 				List<T> children = CollUtil.newArrayList();
-				Map<String, Object> map = MapUtil.newHashMap();
-				map.put(childField, children);
 				Object key = prop.apply(t);
 				//1.2.1将子集集合字段和关联映射字段做成K-V形式，方便后续归档
 				if (key != null) {
 					group.put(key, children);
 				}
 				//1.2.2返回插桩后的字段
-				return addExtra(t, map);
+				return addProp(t, childField,children);
 			}
 		}).collect(Collectors.toList());
 		//2.归档子节点集合
@@ -127,7 +134,7 @@ public class BeanExtUtil {
 	 * @return	List<T>
 	 * @param <T>	泛型
 	 */
-	public static <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp) {
+	public <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp) {
 		return decorateTree(list,prop,parentProp,"children");
 	}
 }
