@@ -19,57 +19,52 @@ import java.util.Map;
  *
  * @param <T>
  */
+@Getter
 @NoArgsConstructor
 public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
     /**
      * 连接符
      */
-    @Getter
     protected Constants.RelationType relationType = Constants.RelationType.AND;
     /**
      * 每页显示条数，默认 10
      */
-    @Getter
     protected long size = 10;
     /**
      * 当前页
      */
-    @Getter
     protected long current = 1;
     /**
      * 查询条件
      */
-    @Getter
     protected Map<String, Object> params = new HashMap<>();
     /**
      * 查询字段，
      */
-    @Getter
     protected List<String> fields = new ArrayList<>();
     /**
      * 排除字段
      */
-    @Getter
     protected List<String> excludes = new ArrayList<>();
     /**
      * 排序字段
      */
-    @Getter
     protected List<OrderBy> orderBys = new ArrayList<>();
     /**
      * groupBy字段
      */
-    @Getter
     protected List<String> groupBys = new ArrayList<>();
     /**
-     * 查询子条件集合
+     * 查询不同条件关联关系的集合
      */
-    @Getter
     protected List<C> relations = new ArrayList<>();
+    /**
+     * 查询不同条件关联关系的集合
+     */
+    protected List<C> subqueries = new ArrayList<>();
     /**
      * 查询对象字段限定
      */
-    @Getter
     protected T selectors;
 
     /**
@@ -100,7 +95,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
     }
     /**
      * 设置连接符
-     * @param relationType
+     * @param relationType  链接符枚举
      */
     public C setRelationType(Constants.RelationType relationType) {
         this.relationType = relationType;
@@ -156,12 +151,23 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         return (C) this;
     }
     /**
-     * 查询子条件集合
+     * 查询不同条件关联关系的集合
      */
     public C setRelations(List<C> relations) {
         this.relations = relations;
         return (C) this;
     }
+
+    /**
+     * 设置子查询集合
+     * @param subqueries    子查询集合
+     * @return  C
+     */
+    public C setSubqueries(List<C> subqueries) {
+        this.subqueries = subqueries;
+        return (C) this;
+    }
+
     /**
      * 查询对象字段限定
      */

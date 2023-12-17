@@ -11,4 +11,18 @@
     <description>基于mybatis-plus方案的持久层扩展</description>
     <artifactId>muggles-repo-mp</artifactId>
 
+    <dependencies>
+        <!--持久层基础模块，定义基本数据结构和接口-->
+        <dependency>
+            <groupId>com.muggles.fun</groupId>
+            <artifactId>muggles-repo-basic</artifactId>
+            <version>${muggles.version}</version>
+        </dependency>
+
+        <!--mybatis-plus依赖-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+    </dependencies>
 </project>

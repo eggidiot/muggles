@@ -25,5 +25,11 @@
             <artifactId>muggles-basic</artifactId>
             <version>${muggles.version}</version>
         </dependency>
+
+        <!--雪花漂移算法生成ID-->
+        <dependency>
+            <groupId>com.github.yitter</groupId>
+            <artifactId>yitter-idgenerator</artifactId>
+        </dependency>
     </dependencies>
 </project>
