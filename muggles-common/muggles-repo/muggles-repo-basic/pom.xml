@@ -26,6 +26,13 @@
             <version>${muggles.version}</version>
         </dependency>
 
+        <!--麻瓜工具箱-->
+        <dependency>
+            <groupId>com.muggles.fun</groupId>
+            <artifactId>muggles-tools</artifactId>
+            <version>${muggles.version}</version>
+        </dependency>
+
         <!--雪花漂移算法生成ID-->
         <dependency>
             <groupId>com.github.yitter</groupId>

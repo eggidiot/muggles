@@ -23,14 +23,14 @@ public interface IMuggleService<T> {
      * @return  T
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam>T one(C param);
+    <C extends MuggleParam<T, C>>T one(C param);
     /**
      * 根据查询条件查询实体集合
      * @param param 查询条件
      * @return  T
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam>List<T> list(C param);
+    <C extends MuggleParam<T, C>>List<T> list(C param);
 
     /**
      * 根据查询条件查询实体分页集合
@@ -38,7 +38,7 @@ public interface IMuggleService<T> {
      * @return  T
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam>IMuggleService<T> page(C param);
+    <C extends MuggleParam<T, C>>IMuggleService<T> page(C param);
 
     /**
      * 新增对象记录
@@ -60,7 +60,7 @@ public interface IMuggleService<T> {
      * @return  Boolean
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam>Boolean update(T t,C param);
+    <C extends MuggleParam<T, C>>Boolean update(T t,C param);
 
     /**
      * 根据id删除记录
@@ -87,7 +87,7 @@ public interface IMuggleService<T> {
      * @return  Boolean
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam>Boolean updateBatch(List<T> list,C param);
+    <C extends MuggleParam<T, C>>Boolean updateBatch(List<T> list,C param);
     /**
      * 根据实体id批量插入或者更新实体
      * @param list  实体记录
@@ -108,5 +108,5 @@ public interface IMuggleService<T> {
      * @return
      * @param <C>
      */
-    <C extends MuggleParam>Boolean remove(C param);
+    <C extends MuggleParam<T, C>>Boolean remove(C param);
 }
