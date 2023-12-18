@@ -1,5 +1,6 @@
 package com.muggles.fun.basic;
 
+import com.muggles.fun.basic.model.IMugglePage;
 import com.muggles.fun.basic.model.MuggleParam;
 
 import java.io.Serializable;
@@ -9,12 +10,16 @@ import java.util.List;
  * 基本CRUD查询service
  * @param <T> 针对泛型对象查询
  */
-public interface IMuggleService<T> {
-
+public interface ICrudService<T> {
+    /**
+     * 查询全表记录
+     * @return	List<T>
+     */
+    List<T> list();
     /**
      * 根据id获取对象
-     * @param id
-     * @return
+     * @param id    主键
+     * @return  T
      */
     T getById(Serializable id);
     /**
@@ -38,7 +43,7 @@ public interface IMuggleService<T> {
      * @return  T
      * @param <C>   条件泛型
      */
-    <C extends MuggleParam<T, C>>IMuggleService<T> page(C param);
+    <C extends MuggleParam<T, C>> IMugglePage<T> page(C param);
 
     /**
      * 新增对象记录
@@ -53,6 +58,15 @@ public interface IMuggleService<T> {
      * @return  Boolean
      */
     Boolean updateById(T t);
+
+    /**
+     * 根据记录的id值是否存在进行更新或者保存的操作
+     *
+     * @param entity 实体对象
+     * @return	boolean
+     */
+    boolean saveOrUpdate(T entity);
+
     /**
      * 将指定条件的记录更新诚实体非null字段
      * @param t     实体记录
@@ -104,9 +118,9 @@ public interface IMuggleService<T> {
 
     /**
      * 根据条件删除实体记录
-     * @param param
-     * @return
-     * @param <C>
+     * @param param 通用查询参数
+     * @return  C
+     * @param <C>   泛型
      */
     <C extends MuggleParam<T, C>>Boolean remove(C param);
 }
