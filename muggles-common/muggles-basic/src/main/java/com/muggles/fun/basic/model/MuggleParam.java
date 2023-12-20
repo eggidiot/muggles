@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -20,7 +21,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     /**
      * 连接符
      */
-    protected Constants.RelationType relationType = Constants.RelationType.AND;
+    protected Constants.RelationType type = Constants.RelationType.AND;
     /**
      * 每页显示条数，默认 10
      */
@@ -54,13 +55,13 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      */
     protected List<C> relations = new ArrayList<>();
     /**
-     * 查询不同条件关联关系的集合
-     */
-    protected List<C> subqueries = new ArrayList<>();
-    /**
      * 查询对象字段限定
      */
     protected T selectors;
+    /**
+     * 下一个条件用and或者or连接
+     */
+    protected AtomicBoolean nextRelation = new AtomicBoolean();
 
     /**
      * 排序字段
@@ -94,8 +95,8 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      *
      * @param relationType 链接符枚举
      */
-    public C setRelationType(Constants.RelationType relationType) {
-        this.relationType = relationType;
+    public C setType(Constants.RelationType relationType) {
+        this.type = relationType;
         return (C) this;
     }
 
@@ -164,17 +165,6 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     }
 
     /**
-     * 设置子查询集合
-     *
-     * @param subqueries 子查询集合
-     * @return C
-     */
-    public C setSubqueries(List<C> subqueries) {
-        this.subqueries = subqueries;
-        return (C) this;
-    }
-
-    /**
      * 查询对象字段限定
      */
     public C setSelectors(T selectors) {
@@ -209,7 +199,8 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * @return C
      */
     public C or() {
-        return setRelationType(Constants.RelationType.OR);
+        nextRelation.set(false);
+        return (C) this;
     }
 
     /**
@@ -218,7 +209,8 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * @return C
      */
     public C and() {
-        return setRelationType(Constants.RelationType.AND);
+        nextRelation.set(true);
+        return (C) this;
     }
 
     /**
@@ -229,7 +221,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     @SneakyThrows
     public C relation(Consumer<C> consumer, Constants.RelationType type) {
         C c = (C) this.getClass().newInstance();
-        consumer.accept(c.setRelationType(type));
+        consumer.accept(c.setType(type));
         relations.add(c);
         return (C) this;
     }
@@ -321,4 +313,14 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
         return (C) this;
     }
 
+    /**
+     * 根据值获取下一个连接符
+     * @return
+     */
+    public Constants.RelationType type(){
+        if (nextRelation.getAndSet(true)){
+            return Constants.RelationType.AND;
+        }
+        return Constants.RelationType.OR;
+    }
 }
