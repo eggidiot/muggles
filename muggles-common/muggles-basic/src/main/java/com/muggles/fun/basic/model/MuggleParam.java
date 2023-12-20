@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import static com.muggles.fun.basic.Constants.RelationType;
+
 /**
  * 自定义查询参数，支持简单的模糊查询和等值查询
  * 等值查询的时候传入condition使用对象的属性作为查询值
@@ -21,7 +23,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     /**
      * 连接符
      */
-    protected Constants.RelationType type = Constants.RelationType.AND;
+    protected RelationType type = RelationType.AND;
     /**
      * 每页显示条数，默认 10
      */
@@ -95,7 +97,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      *
      * @param relationType 链接符枚举
      */
-    public C setType(Constants.RelationType relationType) {
+    public C setType(RelationType relationType) {
         this.type = relationType;
         return (C) this;
     }
@@ -219,7 +221,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * @return C
      */
     @SneakyThrows
-    public C relation(Consumer<C> consumer, Constants.RelationType type) {
+    public C relation(Consumer<C> consumer, RelationType type) {
         C c = (C) this.getClass().newInstance();
         consumer.accept(c.setType(type));
         relations.add(c);
@@ -233,7 +235,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * @return C
      */
     public C or(Consumer<C> consumer) {
-        return relation(consumer, Constants.RelationType.OR);
+        return relation(consumer, RelationType.OR);
     }
 
     /**
@@ -243,7 +245,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * @return C
      */
     public C and(Consumer<C> consumer) {
-        return relation(consumer, Constants.RelationType.AND);
+        return relation(consumer, RelationType.AND);
     }
 
     /**
@@ -317,10 +319,10 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * 根据值获取下一个连接符
      * @return
      */
-    public Constants.RelationType type(){
+    public RelationType type(){
         if (nextRelation.getAndSet(true)){
-            return Constants.RelationType.AND;
+            return RelationType.AND;
         }
-        return Constants.RelationType.OR;
+        return RelationType.OR;
     }
 }
