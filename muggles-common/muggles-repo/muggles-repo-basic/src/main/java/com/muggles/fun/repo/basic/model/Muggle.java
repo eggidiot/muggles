@@ -12,6 +12,8 @@ import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.criteria.between.BetweenParam;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.*;
@@ -45,7 +47,9 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     /**
      * 默认使用的函数带有ifnull函数模板
      */
-    protected String func = RepoConstants.FUNC_TEMPLATE_IFNULL;
+    @Getter
+    @Setter
+    protected static String func = RepoConstants.FUNC_TEMPLATE_IFNULL;
 
     /**
      * 指定查询字段
@@ -544,7 +548,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
             alias = field;
         }
         Assert.notNull(type, () -> new MugglesBizException("未知函数名称"));
-        field = String.format(func, type.name().toLowerCase(), field, alias);
+        field = String.format(Muggle.getFunc(), type.name().toLowerCase(), field, alias);
         this.fields.add(field);
         return this;
     }
