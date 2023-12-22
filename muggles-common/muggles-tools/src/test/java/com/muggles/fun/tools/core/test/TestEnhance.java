@@ -10,9 +10,9 @@ public class TestEnhance {
 
 
     public static void main(String[] args) {
-        AccountService a1 = new AccountService();
+        AccountService a1 = new AccountService(null);
         MethodEnhanceUtil.enhancerBefore(a1,"aa",null).deductMoney1(5,4);
-//        MethodEnhanceUtil.hooked(a1).method(null).bofore(null).bofore().after().after().get();
+        MethodEnhanceUtil.<AccountService>hooked(a1).methods(AccountService::getAmount).bofore(null).get();
         System.out.println("目标类对象accountService的余额：");
         System.out.println(a1.getAmount());
 

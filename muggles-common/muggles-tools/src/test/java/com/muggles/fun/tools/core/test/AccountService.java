@@ -1,10 +1,15 @@
 package com.muggles.fun.tools.core.test;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 public class AccountService {
-    private int amount = 100;
+    private Integer amount = new Integer(100);
+
+
+    public AccountService(Object o) {
+    }
 
     public void deductMoney(int money){
         System.out.println("开始扣款，请稍等。。。");
