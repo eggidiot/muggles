@@ -49,7 +49,7 @@ public class MethodEnhanceUtil {
         /**
          * 获得目标类的代理对象
          *
-         * @return
+         * @return  Object
          */
         public Object getObject() {
             //1.工具类
@@ -172,8 +172,8 @@ public class MethodEnhanceUtil {
         /**
          * 返回增强对象
          *
-         * @param <T>
-         * @return
+         * @param <T>   泛型
+         * @return      增强后对象
          */
         public <T> T get() {
             return (T) getObject();
@@ -259,11 +259,11 @@ public class MethodEnhanceUtil {
     /**
      * 设置某个方法后置拦截，插入业务逻辑
      *
-     * @param t
-     * @param method
-     * @param after
-     * @param <T>
-     * @return
+     * @param t      增强对象
+     * @param method 增强方法
+     * @param after  后置处理器
+     * @param <T>    泛型
+     * @return 增强对象
      */
     public <T> T enhancerAfter(T t, String method, IEnhanceAfter after) {
         return enhancer(t, method, null, after);
@@ -272,11 +272,11 @@ public class MethodEnhanceUtil {
     /**
      * 设置某个方法后置拦截，插入业务逻辑
      *
-     * @param t
-     * @param method
-     * @param after
-     * @param <T>
-     * @return
+     * @param t      增强对象
+     * @param method 增强方法
+     * @param after  后置处理器
+     * @param <T>    泛型
+     * @return 增强对象
      */
     public <T> T enhancerAfter(T t, Method method, IEnhanceAfter after) {
         return enhancer(t, method, null, after);

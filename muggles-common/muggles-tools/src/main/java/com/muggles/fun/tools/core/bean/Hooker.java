@@ -1,6 +1,8 @@
 package com.muggles.fun.tools.core.bean;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.func.Func1;
+import cn.hutool.core.lang.func.LambdaUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -178,16 +180,6 @@ public class Hooker<T> {
             return this.hooker.get();
         }
     }
-    /**
-     * 构造器
-     * @param t         被劫持对象
-     * @param method    被劫持方法
-     */
-    private Hooker(T t, Method method) {
-        this.t = new WeakReference<>(t);
-        Holder<T> holder = new Holder<>(method, this);
-        holders.add(holder);
-    }
 
     /**
      * 构造器
@@ -309,6 +301,9 @@ public class Hooker<T> {
      * @return          Holder<T>
      */
     public Holder<T> method(Method method) {
+        if (method == null) {
+            return null;
+        }
         Holder<T> hh = null;
         for (Holder<T> h:holders) {
             if (h.check(method)) {
@@ -320,6 +315,36 @@ public class Hooker<T> {
             this.holders.add(hh);
         }
         return hh;
+    }
+
+    /**
+     * 设置劫持方法对象
+     * @param method    被劫持方法
+     * @return          Holder<T>
+     */
+    public Holder<T> method(String method) {
+        Method m = MethodEnhanceUtil.findMethod(t.get(),method);
+        return method(m);
+    }
+
+    /**
+     * 设置劫持方法对象
+     * @param method    被劫持方法
+     * @return          Holder<T>
+     */
+    public Holder<T> method(String method, Class<?>... paramTypes) {
+        Method m = MethodEnhanceUtil.findMethod(t.get(),method,paramTypes);
+        return method(m);
+    }
+
+    /**
+     * 设置劫持方法对象
+     * @param method    被劫持方法
+     * @return          Holder<T>
+     */
+    public Holder<T> method(Func1<T,?> method) {
+        String methodName = LambdaUtil.getMethodName(method);
+        return method(methodName);
     }
 
     /**
@@ -341,7 +366,7 @@ public class Hooker<T> {
      * @return              劫持代理
      */
     public static <T>Holder<T> hooked(T t, Method method) {
-        Hooker<T> hh = new Hooker<>(t, method);
+        Hooker<T> hh = new Hooker<>(t);
         return hh.method(method);
     }
 
@@ -352,18 +377,21 @@ public class Hooker<T> {
      * @param <T>           泛型
      */
     public static <T>Hooker<T> hooked(T t) {
-        return new Hooker<>(t,null);
+        return new Hooker<>(t);
     }
 
     /**
      * 获取劫持以后对象
      * @return  T
      */
-    public T getHookedObject(){
+    public T target(){
         if (CollUtil.isEmpty(holders)) {
             return t.get();
         }
-        //TODO
-        return null;
+        MethodEnhanceUtil.CglibProxyFactory factory = new MethodEnhanceUtil.CglibProxyFactory(t.get());
+        for (Holder<T> h: holders) {
+            factory.enhance(h.method.get(),h.before,h.after);
+        }
+        return factory.get();
     }
 }

@@ -1,16 +1,14 @@
 package com.muggles.fun.tools.core.test;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 public class AccountService {
     private int amount = 100;
 
-
-    public AccountService(Object o) {
-    }
-
-    public AccountService deductMoney2(int money){
+    public AccountService deductMoney2(){
         System.out.println("开始扣款，请稍等。。。");
-        amount  = amount-money;
+        amount  = amount-6;
         return this;
     }
 
@@ -22,5 +20,12 @@ public class AccountService {
 
     public int deductMoney1(int money,int rate){
         return deductMoney(money,rate);
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 }

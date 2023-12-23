@@ -3,22 +3,29 @@ package com.muggles.fun.tools.core.test;
 import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.json.JSONUtil;
 import com.muggles.fun.tools.core.bean.BeanExtUtil;
-import com.muggles.fun.tools.core.bean.MethodEnhanceUtil;
+import com.muggles.fun.tools.core.bean.Hooker;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class TestEnhance {
 
 
 
     public static void main(String[] args) {
-        AccountService a1 = new AccountService(null);
-        MethodEnhanceUtil.enhancerBefore(a1,"aa",null).deductMoney1(5,4);
-        LambdaUtil.getMethodName(AccountService::getAmount);
-        System.out.println("目标类对象accountService的余额：");
-        System.out.println(a1.getAmount());
-
-
-        a1 = BeanExtUtil.addProp(a1,"name","张三");
-        System.out.println("args = " + JSONUtil.toJsonStr(a1));
+        AccountService a1 = new AccountService();
+//        MethodEnhanceUtil.enhancerBefore(a1,"deductMoney1",(obj,method,params)->{
+//            log.info("前置切面对象:{},方法:{},参数:{}", obj, method.getName(), params);
+//            return true;
+//        }).deductMoney1(5,4);
+        AccountService res =Hooker.hooked(a1).method("deductMoney1").bofore((obj, method, params)->{
+            log.info("前置切面对象22:{},方法:{},参数:{}", obj, method.getName(), params);
+            params[1] = 66;
+            return true;
+        }).done().method(AccountService::deductMoney2).bofore((obj, method, params)->{
+                    log.info("前置切面对象33:{},方法:{},参数:{}", obj, method.getName(), params);
+                    return true;
+                }).done()
+                .target().deductMoney2();
+        log.info("结果:{}",res);
     }
 }
