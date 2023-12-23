@@ -1,8 +1,6 @@
 package com.muggles.fun.tools.core.bean;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.func.Func1;
-import cn.hutool.core.lang.func.LambdaUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -21,7 +19,7 @@ public class Hooker<T> {
     /**
      * 方法持有链
      */
-    List<Holder> holders = CollUtil.newArrayList();
+    List<Holder<T>> holders = CollUtil.newArrayList();
     /**
      * 劫持方法持有
      */
@@ -38,29 +36,19 @@ public class Hooker<T> {
          * 默认后置处理器链
          */
         EnhanceChain after = new EnhanceChain();
-
         /**
          * 构造器
-         * @param method
-         */
-        public Holder(Method method) {
-            this.method = new WeakReference<>(method);
-        }
-
-        /**
-         * 设置劫持方法对象
          * @param method    被劫持方法
-         * @return
          */
-        public Holder methods(Func1<T,?> method) {
-            return this;
+        private Holder(Method method) {
+            this.method = new WeakReference<>(method);
         }
         /**
          * 前置处理器
          * @param before    前置处理器
-         * @return
+         * @return          Holder<T>
          */
-        public Holder bofore(IEnhanceBefore before) {
+        public Holder<T> bofore(IEnhanceBefore before) {
             this.before.put(before);
             return this;
         }
@@ -69,9 +57,9 @@ public class Hooker<T> {
          * 前置处理器
          * @param before    前置处理器
          * @param index     插入位置
-         * @return
+         * @return          Holder<T>
          */
-        public Holder bofore(IEnhanceBefore before, int index) {
+        public Holder<T> bofore(IEnhanceBefore before, int index) {
             this.before.put(before,index);
             return this;
         }
@@ -79,9 +67,9 @@ public class Hooker<T> {
         /**
          * 后置处理器
          * @param after     后置处理器
-         * @return
+         * @return          Holder<T>
          */
-        public Holder after(IEnhanceAfter after) {
+        public Holder<T> after(IEnhanceAfter after) {
             this.after.put(after);
             return this;
         }
@@ -90,11 +78,91 @@ public class Hooker<T> {
          * 后置处理器
          * @param after     后置处理器
          * @param index     插入位置
-         * @return
+         * @return          Holder<T>
          */
-        public Holder after(IEnhanceAfter after, int index) {
+        public Holder<T> after(IEnhanceAfter after, int index) {
             this.after.put(after,index);
             return this;
+        }
+
+        /**
+         * 返回当前所有的前置过滤器
+         * @return  前置过滤器链集合
+         */
+        public List<IEnhanceBefore> befores(){
+            return this.before.getBeforeChain();
+        }
+
+        /**
+         * 返回当前所有的后置过滤器
+         * @return  前置过滤器链集合
+         */
+        public List<IEnhanceAfter> afters(){
+            return this.after.getAfterChain();
+        }
+
+        /**
+         * 清理前置处理器
+         * @return  Holder<T>
+         */
+        public Holder<T> clearBefores(){
+            this.before.getBeforeChain().clear();
+            return this;
+        }
+
+        /**
+         * 清理指定位置前置处理器
+         * @return  Holder<T>
+         */
+        public Holder<T> clearBefores(int pos){
+            if (this.before.getBeforeChain().isEmpty()) {
+                return this;
+            }
+            if (pos <  0) {
+                pos = 0;
+            }
+            if (pos > this.before.getBeforeChain().size()) {
+                pos = this.before.getBeforeChain().size() - 1;
+            }
+            this.before.getBeforeChain().remove(pos);
+            return this;
+        }
+
+
+        /**
+         * 清理后置处理器
+         * @return  Holder<T>
+         */
+        public Holder<T> clearAfters(){
+            this.after.getAfterChain().clear();
+            return this;
+        }
+
+        /**
+         * 清理指定位置前置处理器
+         * @return  Holder<T>
+         */
+        public Holder<T> clearAfters(int pos){
+            if (this.after.getBeforeChain().isEmpty()) {
+                return this;
+            }
+            if (pos <  0) {
+                pos = 0;
+            }
+            if (pos > this.after.getBeforeChain().size()) {
+                pos = this.after.getBeforeChain().size() - 1;
+            }
+            this.after.getBeforeChain().remove(pos);
+            return this;
+        }
+
+        /**
+         * 确认方法是否被当前Holder对象持有
+         * @param method    方法
+         * @return          boolean
+         */
+        public boolean check(Method method) {
+            return method.equals(this.method.get());
         }
     }
     /**
@@ -102,9 +170,9 @@ public class Hooker<T> {
      * @param t         被劫持对象
      * @param method    被劫持方法
      */
-    public Hooker(T t, Method method) {
+    private Hooker(T t, Method method) {
         this.t = new WeakReference<>(t);
-        Holder holder = new Holder(method);
+        Holder<T> holder = new Holder<>(method);
         holders.add(holder);
     }
 
@@ -112,7 +180,7 @@ public class Hooker<T> {
      * 构造器
      * @param t     被劫持对象
      */
-    public Hooker(T t) {
+    private Hooker(T t) {
         this.t = new WeakReference<>(t);
     }
 
@@ -174,11 +242,11 @@ public class Hooker<T> {
 
         /**
          * 在指定位置插入前置处理器
-         * @param before    前置处理器
-         * @param index     插入位置
-         * @return
+         *
+         * @param before 前置处理器
+         * @param index  插入位置
          */
-        public EnhanceChain put(IEnhanceBefore before,int index) {
+        public void put(IEnhanceBefore before, int index) {
             if (index < 0) {
                 index = 0;
             }
@@ -186,25 +254,23 @@ public class Hooker<T> {
                 index = beforeChain.size();
             }
             beforeChain.add(index,before);
-            return this;
         }
         /**
          * 在指定位置插入前置处理器
-         * @param before    前置处理器
-         * @return
+         *
+         * @param before 前置处理器
          */
-        public EnhanceChain put(IEnhanceBefore before) {
+        public void put(IEnhanceBefore before) {
             beforeChain.add(before);
-            return this;
         }
 
         /**
          * 在指定位置插入前置处理器
-         * @param after     后置处理器
-         * @param index     插入位置
-         * @return
+         *
+         * @param after 后置处理器
+         * @param index 插入位置
          */
-        public EnhanceChain put(IEnhanceAfter after,int index) {
+        public void put(IEnhanceAfter after, int index) {
             if (index < 0) {
                 index = 0;
             }
@@ -212,29 +278,35 @@ public class Hooker<T> {
                 index = afterChain.size();
             }
             afterChain.add(index,after);
-            return this;
         }
 
         /**
          * 在指定位置插入前置处理器
-         * @param after     后置处理器
-         * @return
+         *
+         * @param after 后置处理器
          */
-        public EnhanceChain put(IEnhanceAfter after) {
+        public void put(IEnhanceAfter after) {
             afterChain.add(after);
-            return this;
         }
     }
 
     /**
      * 设置劫持方法对象
      * @param method    被劫持方法
-     * @return
+     * @return          Holder<T>
      */
-    public Holder method(Method method) {
-        Holder holder = new Holder(method);
-        holders.add(holder);
-        return holder;
+    public Holder<T> method(Method method) {
+        Holder<T> hh = null;
+        for (Holder<T> h:holders) {
+            if (h.check(method)) {
+                hh = h;
+            }
+        }
+        if (hh == null) {
+            hh = new Holder<>(method);
+            this.holders.add(hh);
+        }
+        return hh;
     }
 
     /**
@@ -243,12 +315,10 @@ public class Hooker<T> {
      * @param method        劫持方法对象
      * @param paramTypes    方法参数
      * @return              劫持代理
-     * @param <T>           泛型
      */
-    public <T> Hooker hooked(T t, Func1<T,?> method, Class<?>... paramTypes) {
-
-        Hooker hh = new Hooker(t,null);
-        return hh;
+    public static <T>Holder<T> hooked(T t, String method, Class<?>... paramTypes) {
+        Method m = MethodEnhanceUtil.findMethod(t,method,paramTypes);
+        return hooked(t,m);
     }
 
     /**
@@ -256,14 +326,10 @@ public class Hooker<T> {
      * @param t             劫持实体对象
      * @param method        劫持方法对象
      * @return              劫持代理
-     * @param <T>           泛型
      */
-    public <T> Hooker hooked(T t, Func1<T,?> method) {
-        MethodEnhanceUtil.CglibProxyFactory factory = new MethodEnhanceUtil.CglibProxyFactory(t);
-        String methodName = LambdaUtil.getMethodName(method);
-        Method m = MethodEnhanceUtil.findMethod(t,methodName);
-        Hooker hh = new Hooker(factory,m);
-        return hh;
+    public static <T>Holder<T> hooked(T t, Method method) {
+        Hooker<T> hh = new Hooker<>(t, method);
+        return hh.method(method);
     }
 
     /**
@@ -272,9 +338,7 @@ public class Hooker<T> {
      * @return              劫持代理
      * @param <T>           泛型
      */
-    public <T> Hooker hooked(T t) {
-        MethodEnhanceUtil.CglibProxyFactory factory = new MethodEnhanceUtil.CglibProxyFactory(t);
-        Hooker hh = new Hooker(factory);
-        return hh;
+    public static <T>Hooker<T> hooked(T t) {
+        return new Hooker<>(t,null);
     }
 }
