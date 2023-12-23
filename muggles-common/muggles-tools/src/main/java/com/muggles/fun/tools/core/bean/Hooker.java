@@ -29,6 +29,10 @@ public class Hooker<T> {
          */
         WeakReference<Method> method;
         /**
+         * 劫持代理对象弱引用
+         */
+        WeakReference<Hooker<T>> hooker;
+        /**
          * 默认前置处理器链
          */
         EnhanceChain before = new EnhanceChain();
@@ -40,8 +44,9 @@ public class Hooker<T> {
          * 构造器
          * @param method    被劫持方法
          */
-        private Holder(Method method) {
+        private Holder(Method method, Hooker<T> hooker) {
             this.method = new WeakReference<>(method);
+            this.hooker = new WeakReference<>(hooker);
         }
         /**
          * 前置处理器
@@ -164,6 +169,14 @@ public class Hooker<T> {
         public boolean check(Method method) {
             return method.equals(this.method.get());
         }
+
+        /**
+         * 单个holder设置完毕，返回代理对象
+         * @return  Hooker<T>
+         */
+        public Hooker<T> done(){
+            return this.hooker.get();
+        }
     }
     /**
      * 构造器
@@ -172,7 +185,7 @@ public class Hooker<T> {
      */
     private Hooker(T t, Method method) {
         this.t = new WeakReference<>(t);
-        Holder<T> holder = new Holder<>(method);
+        Holder<T> holder = new Holder<>(method, this);
         holders.add(holder);
     }
 
@@ -303,7 +316,7 @@ public class Hooker<T> {
             }
         }
         if (hh == null) {
-            hh = new Holder<>(method);
+            hh = new Holder<>(method, this);
             this.holders.add(hh);
         }
         return hh;
@@ -340,5 +353,17 @@ public class Hooker<T> {
      */
     public static <T>Hooker<T> hooked(T t) {
         return new Hooker<>(t,null);
+    }
+
+    /**
+     * 获取劫持以后对象
+     * @return  T
+     */
+    public T getHookedObject(){
+        if (CollUtil.isEmpty(holders)) {
+            return t.get();
+        }
+        //TODO
+        return null;
     }
 }
