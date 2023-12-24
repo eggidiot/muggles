@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- * 链式调用holder
+ * 劫持代理对象，支持链式调用
  */
 public class Hooker<T> {
     /**
@@ -388,7 +388,7 @@ public class Hooker<T> {
         if (CollUtil.isEmpty(holders)) {
             return t.get();
         }
-        MethodEnhanceUtil.CglibProxyFactory factory = new MethodEnhanceUtil.CglibProxyFactory(t.get());
+        CglibProxyFactory factory = new CglibProxyFactory(t.get());
         for (Holder<T> h: holders) {
             factory.enhance(h.method.get(),h.before,h.after);
         }
