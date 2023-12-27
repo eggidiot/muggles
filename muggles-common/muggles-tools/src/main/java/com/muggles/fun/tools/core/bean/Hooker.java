@@ -338,7 +338,7 @@ public class Hooker<T> {
     }
 
     /**
-     * 设置劫持方法对象
+     * 设置劫持方法对象，只能用户无参的方法获取方法名称
      * @param method    被劫持方法
      * @return          Holder<T>
      */

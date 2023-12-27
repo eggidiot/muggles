@@ -21,11 +21,11 @@ public class TestEnhance {
             log.info("前置切面对象22:{},方法:{},参数:{}", obj, method.getName(), params);
             params[1] = 66;
             return true;
-        }).done().method(AccountService::deductMoney2).bofore((obj, method, params)->{
+        }).done().method("").bofore((obj, method, params)->{
                     log.info("前置切面对象33:{},方法:{},参数:{}", obj, method.getName(), params);
                     return true;
                 }).done()
-                .target().deductMoney2();
+                .target();
         log.info("结果:{}",res);
     }
 }
