@@ -87,6 +87,10 @@ public interface Constants {
          */
         AND,
         /**
+         * 空嵌套
+         */
+        NESTED,
+        /**
          * 条件 or连接
          */
         OR;
