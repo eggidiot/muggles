@@ -9,6 +9,7 @@ import com.muggles.fun.basic.exception.MugglesBizException;
 import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.RepoConstants;
 import com.muggles.fun.repo.basic.criteria.CriteriaType;
+import com.muggles.fun.repo.basic.criteria.OnCriteria;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.criteria.between.BetweenParam;
 import com.muggles.fun.tools.core.bean.LambdaFunction;
@@ -38,6 +39,11 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     protected String alias = "t";
     /**
+     * 作为连接被驱动表时，保存连接驱动表的别名，不用接受外部输入
+     */
+    @Accessors(fluent = true)
+    protected String outAlias;
+    /**
      * 子查询时外部默认方式
      */
     protected CriteriaType subQuery = CriteriaType.In;
@@ -56,7 +62,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     /**
      * 连表条件，数组形式，父类属性中的params最终也将翻译到该属性
      */
-    protected List<QueryCriteria> on = new ArrayList<>();
+    protected List<OnCriteria> on = new ArrayList<>();
     /**
      * 默认使用的函数带有ifnull函数模板
      */
@@ -71,7 +77,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     public Muggle<T> select(LambdaFunction<T, ?>... fields) {
         List<LambdaFunction<T, ?>> list = Arrays.asList(fields);
-        String[] array = ArrayUtil.toArray(list.stream().filter(Objects::nonNull).map(this::columnsToString).collect(Collectors.toList()),String.class);
+        String[] array = ArrayUtil.toArray(list.stream().filter(Objects::nonNull).map(Muggle::columnsToString).collect(Collectors.toList()),String.class);
         return select(array);
     }
     /**
@@ -92,7 +98,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     public Muggle<T> excludes(LambdaFunction<T, ?>... fields) {
         List<LambdaFunction<T, ?>> list = Arrays.asList(fields);
-        String[] array = ArrayUtil.toArray(list.stream().filter(Objects::nonNull).map(this::columnsToString).collect(Collectors.toList()),String.class);
+        String[] array = ArrayUtil.toArray(list.stream().filter(Objects::nonNull).map(Muggle::columnsToString).collect(Collectors.toList()),String.class);
         return excludes(array);
     }
 
@@ -105,7 +111,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     public Muggle<T> groupBy(LambdaFunction<T, ?>... groups) {
         Assert.notNull(groups, () -> new MugglesBizException("分组字段不能传null值"));
         List<LambdaFunction<T, ?>> list = Arrays.asList(groups);
-        String[] array = ArrayUtil.toArray(list.stream().map(this::columnsToString).collect(Collectors.toList()),String.class);
+        String[] array = ArrayUtil.toArray(list.stream().map(Muggle::columnsToString).collect(Collectors.toList()),String.class);
         return groupBy(array);
     }
 
@@ -491,7 +497,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @param attribute 字段属性名称
      * @return String
      */
-    protected String columnsToString(LambdaFunction<T, ?> attribute) {
+    public static <T>String columnsToString(LambdaFunction<T, ?> attribute) {
         return LambdaUtil.getFieldName(attribute);
     }
 
@@ -624,7 +630,95 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
         return this;
     }
     //=====================================================连表查询=================================================
-
+    /**
+     * 设置连表查询条件
+     * @param type      连表类型
+     * @param joinInfo  连接信息
+     * @return  Muggle<T>
+     * @param <R>
+     */
+    public <R>Muggle<T> join(JoinType type,Muggle<R> joinInfo){
+        this.joins.add(joinInfo.setJoin(type).outAlias(getAlias()));
+        return this;
+    }
+    /**
+     * 设置连表查询条件
+     * @param joinInfo  连接信息
+     * @return  Muggle<T>
+     * @param <R>
+     */
+    public <R>Muggle<T> join(Muggle<R> joinInfo){
+        this.joins.add(joinInfo.setJoin(JoinType.INNER).outAlias(getAlias()));
+        return this;
+    }
+    /**
+     * 设置左连表查询条件
+     * @param joinInfo  连接信息
+     * @return  Muggle<T>
+     * @param <R>
+     */
+    public <R>Muggle<T> leftJoin(Muggle<R> joinInfo){
+        this.joins.add(joinInfo.setJoin(JoinType.LEFT).outAlias(getAlias()));
+        return this;
+    }
+    /**
+     * 设置右连表查询条件
+     * @param joinInfo  连接信息
+     * @return  Muggle<T>
+     * @param <R>
+     */
+    public <R>Muggle<T> rightJoin(Muggle<R> joinInfo){
+        this.joins.add(joinInfo.setJoin(JoinType.RIGHT).outAlias(getAlias()));
+        return this;
+    }
+    /**
+     * 设置全连接表查询条件
+     * @param joinInfo  连接信息
+     * @return  Muggle<T>
+     * @param <R>
+     */
+    public <R>Muggle<T> fullJoin(Muggle<R> joinInfo){
+        this.joins.add(joinInfo.setJoin(JoinType.FULL).outAlias(getAlias()));
+        return this;
+    }
+    /**
+     * 设置连表on条件，作为子表查询时用
+     * @param attr1 驱动表属性
+     * @param attr2 被驱动表属性
+     * @return  Muggle<T>
+     * @param <R>   驱动表泛型
+     */
+    public <R>Muggle<T> on(LambdaFunction<R,?> attr1,LambdaFunction<T,?> attr2) {
+        return on(attr1,attr2,RelationType.AND);
+    }
+    /**
+     * 设置连表on条件，作为子表查询时用
+     * @param attr1 驱动表属性
+     * @param attr2 被驱动表属性
+     * @return  Muggle<T>
+     */
+    public Muggle<T> on(String attr1,String attr2) {
+        return on(attr1,attr2,RelationType.AND);
+    }
+    /**
+     * 设置连表on条件，作为子表查询时用
+     * @param attr1 驱动表属性
+     * @param attr2 被驱动表属性
+     * @return  Muggle<T>
+     */
+    public Muggle<T> on(String attr1,String attr2,RelationType type) {
+        this.on.add(new OnCriteria(outAlias()+StrUtil.DOT+attr1,getAlias()+StrUtil.DOT+attr2,type));
+        return this;
+    }
+    /**
+     * 设置连表on条件，作为子表查询时用
+     * @param attr1 驱动表属性
+     * @param attr2 被驱动表属性
+     * @return  Muggle<T>
+     */
+    public <R>Muggle<T> on(LambdaFunction<R,?> attr1,LambdaFunction<T,?> attr2,RelationType type) {
+        return on(columnsToString(attr1),columnsToString(attr2),type);
+    }
 
     //======================================================聚合函数================================================
 
