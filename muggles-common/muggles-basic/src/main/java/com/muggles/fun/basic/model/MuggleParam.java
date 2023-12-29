@@ -61,7 +61,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      */
     protected T selectors;
     /**
-     * 下一个条件用and或者or连接
+     * 下一个条件用and或者or连接，true表示用and连接，false表示用or连接
      */
     protected AtomicBoolean nextRelation = new AtomicBoolean();
 
@@ -319,7 +319,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
      * 根据值获取下一个连接符
      * @return
      */
-    public RelationType type(){
+    protected RelationType type(){
         if (nextRelation.getAndSet(true)){
             return RelationType.AND;
         }

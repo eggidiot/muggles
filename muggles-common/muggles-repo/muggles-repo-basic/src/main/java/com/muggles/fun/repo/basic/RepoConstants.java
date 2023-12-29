@@ -61,4 +61,25 @@ public interface RepoConstants extends Constants {
 		 */
 		AVG
 	}
+	/**
+	 * 函数枚举类型
+	 */
+	enum JoinType {
+		/**
+		 * 内连接
+		 */
+		INNER,
+		/**
+		 * 左连接
+		 */
+		LEFT,
+		/**
+		 * 右连接
+		 */
+		RIGHT,
+		/**
+		 * 全连接
+		 */
+		FULL
+	}
 }

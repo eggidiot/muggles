@@ -1,10 +1,11 @@
 package com.muggles.fun.repo.basic.criteria;
 
-import com.muggles.fun.basic.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+
+import static com.muggles.fun.basic.Constants.RelationType;
 
 /**
  * 查询参数
@@ -30,7 +31,7 @@ public class QueryCriteria implements ICriteria<Object> {
 	/**
 	 * and连接
 	 */
-	protected Constants.RelationType relation;
+	protected RelationType relation;
 
 	/**
 	 * 兼容旧版构造器
@@ -40,6 +41,6 @@ public class QueryCriteria implements ICriteria<Object> {
 	 * @param type      查询类型
 	 */
 	public QueryCriteria(String attribute, Object value, CriteriaType type) {
-		this(attribute, value, type, Constants.RelationType.AND);
+		this(attribute, value, type, RelationType.AND);
 	}
 }

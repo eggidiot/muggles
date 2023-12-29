@@ -1,6 +1,7 @@
 package com.muggles.fun.repo.basic.model;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.muggles.fun.basic.Constants;
@@ -10,6 +11,7 @@ import com.muggles.fun.repo.basic.RepoConstants;
 import com.muggles.fun.repo.basic.criteria.CriteriaType;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.criteria.between.BetweenParam;
+import com.muggles.fun.tools.core.bean.LambdaFunction;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,9 +19,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.muggles.fun.repo.basic.RepoConstants.FuncType;
+import static com.muggles.fun.basic.Constants.RelationType;
+import static com.muggles.fun.repo.basic.RepoConstants.JoinType;
 
 /**
  * 核心查询数据结构，用于默认通用查询，和特定查询方案
@@ -37,6 +42,10 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     protected CriteriaType subQuery = CriteriaType.In;
     /**
+     * 默认内连接
+     */
+    protected JoinType join = JoinType.INNER;
+    /**
      * 查询条件，数组形式，父类属性中的params最终也将翻译到该属性
      */
     protected List<QueryCriteria> criterias = new ArrayList<>();
@@ -45,40 +54,41 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     protected List<Muggle<?>> joins = new ArrayList<>();
     /**
+     * 连表条件，数组形式，父类属性中的params最终也将翻译到该属性
+     */
+    protected List<QueryCriteria> on = new ArrayList<>();
+    /**
      * 默认使用的函数带有ifnull函数模板
      */
     @Getter
     @Setter
-    protected static String func = RepoConstants.FUNC_TEMPLATE_IFNULL;
-
+    protected static String func = RepoConstants.FUNC_TEMPLATE;
     /**
      * 指定查询字段
      *
      * @param fields 字段名边长数组
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> select(LambdaFunction<T, ?>... fields) {
         List<LambdaFunction<T, ?>> list = Arrays.asList(fields);
         String[] array = ArrayUtil.toArray(list.stream().filter(Objects::nonNull).map(this::columnsToString).collect(Collectors.toList()),String.class);
         return select(array);
     }
-
     /**
      * 添加排序字段
      *
      * @param fields 排序字段
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> orderBy(LambdaFunction<T, ?>... fields) {
         Arrays.asList(fields).forEach(f -> orderBy(f, Constants.ASC));
         return this;
     }
-
     /**
      * 排除查询字段
      *
      * @param fields 字段边长数组
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> excludes(LambdaFunction<T, ?>... fields) {
         List<LambdaFunction<T, ?>> list = Arrays.asList(fields);
@@ -90,7 +100,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * 添加排序字段
      *
      * @param groups 分组字段
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> groupBy(LambdaFunction<T, ?>... groups) {
         Assert.notNull(groups, () -> new MugglesBizException("分组字段不能传null值"));
@@ -104,7 +114,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param field 字段
      * @param asc   排序方式
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> orderBy(LambdaFunction<T, ?> field, int asc) {
         return orderBy(columnsToString(field),asc);
@@ -265,20 +275,6 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
         criterias.add(new QueryCriteria(attribute, value, CriteriaType.In, type()));
         return this;
     }
-
-    /**
-     * 添加范围参数
-     *
-     * @param attribute 参数名
-     * @param value     参数值
-     * @return Muggle<T>
-     */
-    public <V> Muggle<T> in(String attribute, Muggle<V> value) {
-        value.setSubQuery(CriteriaType.In);
-        criterias.add(new QueryCriteria(attribute, value, CriteriaType.SubQuery, type()));
-        return this;
-    }
-
     /**
      * 添加范围反向参数
      *
@@ -288,19 +284,6 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     public Muggle<T> notIn(String attribute, Collection<?> value) {
         criterias.add(new QueryCriteria(attribute, value, CriteriaType.NotIn, type()));
-        return this;
-    }
-
-    /**
-     * 添加范围notin子查询
-     *
-     * @param attribute 参数名
-     * @param value     参数值
-     * @return FlineParam<T>
-     */
-    public <R> Muggle<T> notIn(String attribute, Muggle<R> value) {
-        value.setSubQuery(CriteriaType.NotIn);
-        criterias.add(new QueryCriteria(attribute, value, CriteriaType.SubQuery, type()));
         return this;
     }
 
@@ -354,7 +337,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> eq(LambdaFunction<T, ?> attribute, Object value) {
         return eq(columnsToString(attribute), value);
@@ -365,7 +348,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> notEq(LambdaFunction<T, ?> attribute, Object value) {
         return notEq(columnsToString(attribute), value);
@@ -376,7 +359,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> like(LambdaFunction<T, ?> attribute, Object value) {
         return like(columnsToString(attribute), value);
@@ -387,7 +370,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> likeLeft(LambdaFunction<T, ?> attribute, Object value) {
         return likeLeft(columnsToString(attribute), value);
@@ -398,7 +381,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> likeRight(LambdaFunction<T, ?> attribute, Object value) {
         return likeRight(columnsToString(attribute), value);
@@ -409,7 +392,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> greaterthan(LambdaFunction<T, ?> attribute, Object value) {
         return greaterthan(columnsToString(attribute), value);
@@ -420,7 +403,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> lessthan(LambdaFunction<T, ?> attribute, Object value) {
         return lessthan(columnsToString(attribute), value);
@@ -431,7 +414,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> lessthanOrEqual(LambdaFunction<T, ?> attribute, Object value) {
         return lessthanOrEqual(columnsToString(attribute), value);
@@ -442,7 +425,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> greaterthanOrEqual(LambdaFunction<T, ?> attribute, Object value) {
         return greaterthanOrEqual(columnsToString(attribute), value);
@@ -453,39 +436,17 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> in(LambdaFunction<T, ?> attribute, Collection<?> value) {
         return in(columnsToString(attribute), value);
     }
 
     /**
-     * 添加范围参数
-     *
-     * @param attribute 参数名
-     * @param value     参数值
-     * @return FlineParam<T>
-     */
-    public <R> Muggle<T> in(LambdaFunction<T, ?> attribute, Muggle<R> value) {
-        return in(columnsToString(attribute), value);
-    }
-
-    /**
-     * 添加范围notin子查询
-     *
-     * @param attribute 参数名
-     * @param value     参数值
-     * @return FlineParam<T>
-     */
-    public <R> Muggle<T> notIn(LambdaFunction<T, ?> attribute, Muggle<R> value) {
-        return notIn(columnsToString(attribute), value);
-    }
-
-    /**
      * 添加null参数
      *
      * @param attribute 参数名
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> isNull(LambdaFunction<T, ?> attribute) {
         return isNull(columnsToString(attribute));
@@ -495,7 +456,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * 添加非null参数
      *
      * @param attribute 参数名
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> isNotNull(LambdaFunction<T, ?> attribute) {
         return isNotNull(columnsToString(attribute));
@@ -506,7 +467,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> between(LambdaFunction<T, ?> attribute, BetweenParam value) {
         return between(columnsToString(attribute), value);
@@ -517,7 +478,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      *
      * @param attribute 参数名
      * @param value     参数值
-     * @return FlineParam<T>
+     * @return Muggle<T>
      */
     public Muggle<T> notIn(LambdaFunction<T, ?> attribute, Collection<?> value) {
         return notIn(columnsToString(attribute), value);
@@ -525,14 +486,147 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
 
 
     /**
-     * 获取字段名称
+     * 获取实体对象的字段名称
      *
      * @param attribute 字段属性名称
      * @return String
      */
     protected String columnsToString(LambdaFunction<T, ?> attribute) {
-        return null;
+        return LambdaUtil.getFieldName(attribute);
     }
+
+    //======================================================连接条件组==============================================
+    /**
+     * 修改or连接符
+     *
+     * @return Muggle<T>
+     */
+    public Muggle<T> or() {
+        nextRelation.set(false);
+        return this;
+    }
+    /**
+     * 修改or连接符
+     *
+     * @return Muggle<T>
+     */
+    public Muggle<T> and() {
+        nextRelation.set(true);
+        return this;
+    }
+    /**
+     * 使用连接符框定一组条件
+     *
+     * @return Muggle<T>
+     */
+    public Muggle<T> relation(Consumer<Muggle<T>> consumer, RelationType type) {
+        Muggle<T> relation = new Muggle<T>().setType(type);
+        relations.add(relation);
+        consumer.accept(relation);
+        return this;
+    }
+    /**
+     * or方式连接內联一组条件
+     *
+     * @param consumer 执行函数
+     * @return Muggle<T>
+     */
+    public Muggle<T> or(Consumer<Muggle<T>> consumer) {
+        return relation(consumer, RelationType.OR);
+    }
+
+    /**
+     * and方式连接內联一组条件
+     *
+     * @param consumer 执行函数
+     * @return Muggle<T>
+     */
+    public Muggle<T> and(Consumer<Muggle<T>> consumer) {
+        return relation(consumer, RelationType.AND);
+    }
+
+    /**
+     * 纯嵌套內联一组条件，一般用于第一组嵌套条件
+     *
+     * @param consumer 执行函数
+     * @return Muggle<T>
+     */
+    public Muggle<T> nested(Consumer<Muggle<T>> consumer) {
+        return relation(consumer, RelationType.NESTED);
+    }
+    //======================================================子查询=================================================
+    /**
+     * 添加范围notin子查询
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> notIn(String attribute, Muggle<R> value) {
+        value.setSubQuery(CriteriaType.NotIn);
+        criterias.add(new QueryCriteria(attribute, value, CriteriaType.SubQuery, type()));
+        return this;
+    }
+    /**
+     * 添加范围notin子查询
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> notIn(LambdaFunction<T, ?> attribute, Muggle<R> value) {
+        return notIn(columnsToString(attribute), value);
+    }
+    /**
+     * 添加范围参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> in(LambdaFunction<T, ?> attribute, Muggle<R> value) {
+        return in(columnsToString(attribute), value);
+    }
+    /**
+     * 添加范围参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> in(String attribute, Muggle<R> value) {
+        value.setSubQuery(CriteriaType.In);
+        criterias.add(new QueryCriteria(attribute, value, CriteriaType.SubQuery, type()));
+        return this;
+    }
+    /**
+     * 添加范围参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> eq(String attribute, Muggle<R> value) {
+        value.setSubQuery(CriteriaType.Equal);
+        criterias.add(new QueryCriteria(attribute, value, CriteriaType.SubQuery, type()));
+        return this;
+    }
+    /**
+     * 添加范围参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> notEq(String attribute, Muggle<R> value) {
+        value.setSubQuery(CriteriaType.NotEqual);
+        criterias.add(new QueryCriteria(attribute, value, CriteriaType.SubQuery, type()));
+        return this;
+    }
+    //=====================================================连表查询=================================================
+
+
+    //======================================================聚合函数================================================
 
     /**
      * 函数调用
