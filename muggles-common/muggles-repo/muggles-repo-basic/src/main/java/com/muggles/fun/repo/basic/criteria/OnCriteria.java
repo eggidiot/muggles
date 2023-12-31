@@ -1,6 +1,5 @@
 package com.muggles.fun.repo.basic.criteria;
 
-import com.muggles.fun.basic.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
