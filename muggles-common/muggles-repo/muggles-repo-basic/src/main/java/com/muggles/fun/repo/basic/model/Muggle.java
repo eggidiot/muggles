@@ -64,6 +64,10 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     protected List<OnCriteria> on = new ArrayList<>();
     /**
+     * 当前对象类型
+     */
+    protected Class<T> entityClass;
+    /**
      * 默认使用的函数带有ifnull函数模板
      */
     @Getter
@@ -332,11 +336,11 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * 批量添加eq查询条件，会把entity不为null的属性都用eq方式查询
      *
      * @param entity – 查询对象
-     * @return
+     * @return  Muggle<T>
      */
     public Muggle<T> eqAll(T entity) {
         criterias.add(new QueryCriteria(null, entity, CriteriaType.EqualAll, getType()));
-        return this;
+        return setEntityClass((Class<T>) entity.getClass());
     }
     /**
      * 添加相等查询参数

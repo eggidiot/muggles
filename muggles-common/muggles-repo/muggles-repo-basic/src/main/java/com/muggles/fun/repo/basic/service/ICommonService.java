@@ -4,7 +4,6 @@ import com.muggles.fun.basic.ICrudService;
 import com.muggles.fun.repo.basic.model.Muggle;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 /**

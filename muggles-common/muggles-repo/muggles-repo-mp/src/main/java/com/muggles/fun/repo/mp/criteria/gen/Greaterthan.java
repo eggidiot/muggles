@@ -1,8 +1,8 @@
 package com.muggles.fun.repo.mp.criteria.gen;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fline.tp.tools.core.util.ObjectUtil;
-import com.fline.tp.tools.core.util.StrUtil;
 
 /**
  * 大于查询条件

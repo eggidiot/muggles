@@ -1,11 +1,11 @@
 package com.muggles.fun.repo.mp.criteria.gen;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fline.tp.tools.core.collection.CollectionUtil;
-import com.fline.tp.tools.core.util.ObjectUtil;
-import com.fline.tp.tools.core.util.StrUtil;
 
 /**
  * 集合查询条件
@@ -21,8 +21,8 @@ class In implements IGenCriteria {
 	@Override
 	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
 		if (ObjectUtil.isNotNull(criteria.getValue())) {
-			JSONArray array = JSON.parseArray(JSONArray.toJSONString(criteria.getValue()));
-			wrapper.in(StrUtil.isNotBlank(criteria.getAttribute()) && CollectionUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
+			JSONArray array = JSONUtil.parseArray(JSONUtil.toJsonStr(criteria.getValue()));
+			wrapper.in(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
 		}
 		return wrapper;
 	}

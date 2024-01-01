@@ -15,4 +15,5 @@ interface IGenCriteria {
 	 * @return QueryWrapper<?>
 	 */
 	QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria);
+
 }

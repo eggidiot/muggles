@@ -17,7 +17,7 @@ class EqualAll implements IGenCriteria {
 	 *
 	 * @param wrapper  MP查询条件
 	 * @param criteria 查询条件参数
-	 * @return
+	 * @return	QueryWrapper<?>
 	 */
 	@Override
 	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
