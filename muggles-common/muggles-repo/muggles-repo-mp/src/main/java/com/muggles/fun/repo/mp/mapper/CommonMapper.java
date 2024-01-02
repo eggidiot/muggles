@@ -17,21 +17,6 @@ import java.util.Map;
 public interface CommonMapper<T> extends BaseMapper<T> {
 
     /**
-     * 根据 entity 条件，查询一条记录，并锁定
-     *
-     * @param queryWrapper 实体对象封装操作类（可以为 null）
-     */
-    T selectOneForUpdate(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
-
-
-    /**
-     * 根据 entity 条件，查询全部记录，并锁定
-     *
-     * @param queryWrapper 实体对象封装操作类（可以为 null）
-     */
-    List<T> selectListForUpdate(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper);
-
-    /**
      * 根据条件自增更新
      * @param table     表名
      * @param field     字段键值

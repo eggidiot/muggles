@@ -5,19 +5,19 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 /**
- * 相等查询条件
+ * 小于查询条件
  */
-class Equal implements IGenCriteria {
+class Less implements IGenCriteria {
 	/**
 	 * 是否添加not
 	 */
-	private boolean not = false;
+	private boolean equal = false;
 	/**
 	 * 是否添加not
 	 * @return
 	 */
-	public Equal not(){
-		this.not = true;
+	public Less orEqual(){
+		this.equal = true;
 		return this;
 	}
 	/**
@@ -29,10 +29,10 @@ class Equal implements IGenCriteria {
 	 */
 	@Override
 	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
-		if (not) {
-			wrapper.ne(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+		if (equal) {
+			wrapper.le(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
 		} else {
-			wrapper.eq(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+			wrapper.lt(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
 		}
 		return wrapper;
 	}

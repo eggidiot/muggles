@@ -10,6 +10,18 @@ import com.muggles.fun.repo.basic.criteria.between.BetweenParam;
  */
 class Between implements IGenCriteria {
 	/**
+	 * 是否添加not
+	 */
+	private boolean not = false;
+	/**
+	 * 是否添加not
+	 * @return
+	 */
+	public Between not(){
+		this.not = true;
+		return this;
+	}
+	/**
 	 * 根据查询条件和MP对象生成MP查询条件
 	 *
 	 * @param wrapper  MP查询条件
@@ -20,7 +32,11 @@ class Between implements IGenCriteria {
 	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
 		if (ObjectUtil.isNotNull(criteria.getValue())) {
 			BetweenParam betweenParam = (BetweenParam) criteria.getValue();
-			wrapper.between(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(betweenParam.getLoValue()) && ObjectUtil.isNotNull(betweenParam.getHiValue()), criteria.getAttribute(), betweenParam.getLoValue(), betweenParam.getHiValue());
+			if (not) {
+				wrapper.notBetween(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(betweenParam.getLoValue()) && ObjectUtil.isNotNull(betweenParam.getHiValue()), criteria.getAttribute(), betweenParam.getLoValue(), betweenParam.getHiValue());
+			} else {
+				wrapper.between(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(betweenParam.getLoValue()) && ObjectUtil.isNotNull(betweenParam.getHiValue()), criteria.getAttribute(), betweenParam.getLoValue(), betweenParam.getHiValue());
+			}
 		}
 		return wrapper;
 	}

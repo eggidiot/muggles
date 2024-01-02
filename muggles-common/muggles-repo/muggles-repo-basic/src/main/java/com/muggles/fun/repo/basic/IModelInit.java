@@ -1,9 +1,9 @@
 package com.muggles.fun.repo.basic;
 
 /**
- * 实体初始化接口
+ * 实体初始化业务属性接口
  */
-public interface IEntityInitialize<T> {
+public interface IModelInit<T> {
 
     /**
      *

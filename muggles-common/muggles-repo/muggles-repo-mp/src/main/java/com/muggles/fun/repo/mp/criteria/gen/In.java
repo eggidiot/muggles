@@ -12,6 +12,18 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
  */
 class In implements IGenCriteria {
 	/**
+	 * 是否添加not
+	 */
+	private boolean not = false;
+	/**
+	 * 是否添加not
+	 * @return
+	 */
+	public In not(){
+		this.not = true;
+		return this;
+	}
+	/**
 	 * 根据查询条件和MP对象生成MP查询条件
 	 *
 	 * @param wrapper  MP查询条件
@@ -22,7 +34,11 @@ class In implements IGenCriteria {
 	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
 		if (ObjectUtil.isNotNull(criteria.getValue())) {
 			JSONArray array = JSONUtil.parseArray(JSONUtil.toJsonStr(criteria.getValue()));
-			wrapper.in(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
+			if (not) {
+				wrapper.notIn(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
+			} else {
+				wrapper.in(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
+			}
 		}
 		return wrapper;
 	}

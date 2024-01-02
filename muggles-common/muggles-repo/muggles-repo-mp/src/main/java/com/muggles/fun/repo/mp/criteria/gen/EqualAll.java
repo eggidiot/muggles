@@ -23,7 +23,7 @@ class EqualAll implements IGenCriteria {
 	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
 		Object param = criteria.getValue();
 		Map<String, Object> objectMap = BeanUtil.beanToMap(param, true, true);
-		objectMap.forEach(wrapper::eq);
+		wrapper.allEq(objectMap);
 		return wrapper;
 	}
 }

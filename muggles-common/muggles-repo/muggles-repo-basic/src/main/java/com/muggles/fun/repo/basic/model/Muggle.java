@@ -971,4 +971,5 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
         String fieldName = columnsToString(field);
         return func(FuncType.COUNT, fieldName, fieldName);
     }
+
 }

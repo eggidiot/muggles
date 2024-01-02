@@ -50,14 +50,14 @@ public interface ICrudService<T> {
      * @param t 对象实体
      * @return  Boolean
      */
-    Boolean save(T t);
+    boolean save(T t);
 
     /**
      * 根据id更新实体
      * @param t 对象实体
      * @return  Boolean
      */
-    Boolean updateById(T t);
+    boolean updateById(T t);
 
     /**
      * 根据记录的id值是否存在进行更新或者保存的操作
@@ -81,19 +81,19 @@ public interface ICrudService<T> {
      * @param id    实体记录id
      * @return  Boolean
      */
-    Boolean removeById(Serializable id);
+    boolean removeById(Serializable id);
     /**
      * 批量保存实体
      * @param list  实体记录
      * @return  Boolean
      */
-    Boolean saveBatch(List<T> list);
+    boolean saveBatch(List<T> list);
     /**
      * 根据实体id批量更新实体
      * @param list  实体记录
      * @return  Boolean
      */
-    Boolean updateBatchById(List<T> list);
+    boolean updateBatchById(List<T> list);
     /**
      * 将指定条件的记录批量更新诚实体非null字段
      * @param list  实体记录
@@ -107,14 +107,14 @@ public interface ICrudService<T> {
      * @param list  实体记录
      * @return  Boolean
      */
-    Boolean saveOrUpdateBatchById(List<T> list);
+    boolean saveOrUpdateBatchById(List<T> list);
 
     /**
      * 根据id集合批量删除记录
      * @param ids   实体id集合
      * @return  Boolean
      */
-    Boolean removeBatchById(List<Serializable> ids);
+    boolean removeBatchById(List<Serializable> ids);
 
     /**
      * 根据条件删除实体记录

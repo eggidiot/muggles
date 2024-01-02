@@ -68,6 +68,10 @@ public enum CriteriaType {
 	 */
 	Between,
 	/**
+	 * 该条件为范围外判定，左小右大
+	 */
+	NotBetween,
+	/**
 	 * 该条件为范围反向判定
 	 */
 	NotIn,
