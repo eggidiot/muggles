@@ -1,6 +1,7 @@
 package com.muggles.fun.repo.mp.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.TypeUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
@@ -74,8 +75,7 @@ public class CommonServiceImpl<M extends CommonMapper<T>, T> extends ServiceImpl
 	 * 实体对象类型
 	 */
 	public Class<T> getTClass() {
-
-		Class<T> entityClass = (Class<T>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+		Class<T> entityClass = (Class<T>) TypeUtil.getTypeArguments(getClass())[1];;
 		return entityClass;
 	}
 
