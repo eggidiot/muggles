@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.muggles.fun.repo.basic.criteria.CriteriaType;
 import com.muggles.fun.repo.basic.model.Muggle;
+import com.muggles.fun.repo.mp.criteria.BaseSubQuery;
+import com.muggles.fun.repo.mp.criteria.WrapperTranslator;
 import lombok.SneakyThrows;
 
 /**
@@ -26,18 +28,18 @@ class SubQuery<R> implements IGenCriteria {
 			Muggle<R> param = (Muggle<R>) criteria.getValue();
 			String realSql = BaseSubQuery.getSubQuerySql(criteria);
 			switch (param.getSubQuery()){
+				case Equal:
+					wrapper.apply(WrapperTranslator.column(criteria.getAttribute()) + " = (" + realSql + ")");
+					break;
+				case NotEqual:
+					wrapper.apply(WrapperTranslator.column(criteria.getAttribute()) + " <> (" + realSql + ")");
+					break;
 				case In:
-					wrapper.inSql()
+					wrapper.inSql(WrapperTranslator.column(criteria.getAttribute()), realSql);
 					break;
 				case NotIn:
+					wrapper.notInSql(WrapperTranslator.column(criteria.getAttribute()), realSql);
 					break;
-			}
-			// 表示in类型子查询
-			if (param.getSubQuery() == CriteriaType.In) {
-				wrapper.inSql(StrUtil.toUnderlineCase(criteria.getAttribute()), realSql);
-			} else if (param.getSubQuery() == CriteriaType.NotIn) {
-				// not in 类型子查询
-				wrapper.notInSql(StrUtil.toUnderlineCase(criteria.getAttribute()), realSql);
 			}
 		}
 		return wrapper;
