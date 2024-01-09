@@ -82,7 +82,7 @@ public abstract class MpCriteria implements ICriteria<Object> {
 	 * @param wrapper 构建查询条件
 	 * @return QueryWrapper
 	 */
-	public QueryWrapper translate(QueryWrapper wrapper) {
+	public static QueryWrapper translate(QueryWrapper wrapper) {
 		return Optional.ofNullable(criteriaMap.get(getType().name())).map(e -> e.get().translate(wrapper, this)).orElse(null);
 	}
 }
