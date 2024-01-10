@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import com.muggles.fun.basic.exception.MugglesBizException;
 import com.muggles.fun.repo.basic.convert.ParamsConverter;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.model.Muggle;
@@ -33,6 +34,7 @@ public class WrapperTranslator {
      */
     public <T>QueryWrapper<T> translate(Muggle<T> muggle){
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+        MpCriteria criteria = new MpCriteria();
         //1.判断查询参数字典是否为空，如不为空则将查询参数转成查询条件集合
         if (MapUtil.isNotEmpty(muggle.getParams())) {
             List<QueryCriteria> cs = ParamsConverter.conertMap2Criterias(muggle.getParams());
@@ -43,13 +45,14 @@ public class WrapperTranslator {
         if (CollUtil.isNotEmpty(muggle.getCriterias())) {
             muggle.getCriterias().stream()
                     .filter(t -> CollUtil.isEmpty(colums) || CollUtil.contains(colums, t.getAttribute()))
-                    .forEach(c -> MpCriteria.translate(queryWrapper));
+                    .forEach(c -> criteria.translate(queryWrapper));
         }
         //3.处理子条件集合
         muggle.getRelations().forEach(r -> WrapperTranslator.translate(r, queryWrapper));
         //4.设置groupby
         queryWrapper.groupBy(CollUtil.isNotEmpty(muggle.getGroupBys()),
                 muggle.getGroupBys().stream().map(f->WrapperTranslator.column(muggle,f)).collect(Collectors.toList()));
+        List<String> fields = CollUtil.newArrayList(muggle.getFields());
         //5.根据查询对象设置查询字段
         if (muggle.getSelectors() != null) {
             //5.1获取类型的属性列表
@@ -71,10 +74,10 @@ public class WrapperTranslator {
         }
         //6.根据查询字段值设置查询字段
         if (CollUtil.isNotEmpty(muggle.getFields())) {
-            fields = mapField2Colum(fields).stream().filter(f -> !mapField2Colum(muggle.getExcludes()).contains(f))
+            fields = mapField2Colum(fields.stream().filter(f -> !mapField2Colum(muggle.getExcludes()).contains(f))
                     .collect(Collectors.toList());
             if (CollUtil.isEmpty(fields)) {
-                throw new FlineBizException("至少需要有一个查询字段");
+                throw new MugglesBizException("至少需要有一个查询字段");
             }
             queryWrapper.select(fields);
         }
@@ -104,10 +107,12 @@ public class WrapperTranslator {
         if (muggle.getEntityClass() != null) {
             TableInfo table = TableInfoHelper.getTableInfo(muggle.getEntityClass());
             if (table != null) {
-                return table.getFieldList().stream().map(TableFieldInfo::getColumn).collect(Collectors.toList());
+                List<String> columns = table.getFieldList().stream().map(TableFieldInfo::getColumn).collect(Collectors.toList());
+                CollUtil.addAll(columns,table.getKeyColumn());
+                return columns.stream().distinct().collect(Collectors.toList());
             }
         }
-        return null;
+        return CollUtil.newArrayList();
     }
     /**
      * 根据字段属性名称获取表字段名称

@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.criteria.gen;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.muggles.fun.repo.basic.criteria.CriteriaType;
 import com.muggles.fun.repo.basic.criteria.ICriteria;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.function.Supplier;
 /**
  * 查询条件生成mybtis-plus方式
  */
-public abstract class MpCriteria implements ICriteria<Object> {
+public class MpCriteria extends QueryCriteria implements ICriteria<Object> {
 
 	/**
 	 * 查询条件生成容器
@@ -82,7 +83,7 @@ public abstract class MpCriteria implements ICriteria<Object> {
 	 * @param wrapper 构建查询条件
 	 * @return QueryWrapper
 	 */
-	public static QueryWrapper translate(QueryWrapper wrapper) {
+	public QueryWrapper translate(QueryWrapper wrapper) {
 		return Optional.ofNullable(criteriaMap.get(getType().name())).map(e -> e.get().translate(wrapper, this)).orElse(null);
 	}
 }
