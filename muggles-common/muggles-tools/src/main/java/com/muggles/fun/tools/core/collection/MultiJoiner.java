@@ -360,8 +360,6 @@ public class MultiJoiner {
     private <T, U> void performSubsequentJoin(List<MultiJoinResult> previousResults, JoinOperation<T, U> operation,
         List<MultiJoinResult> results, JoinType joinType) {
         for (MultiJoinResult prevResult : previousResults) {
-            // T leftItem = (T)prevResult.get(operation.leftSet.getKey(),
-            // operation.leftSet.getValue().get(0).getClass());
             T leftItem = prevResult.get(operation.leftSet.getKey());
 
             boolean matchedForThisLeftItem = false;
