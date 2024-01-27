@@ -33,24 +33,12 @@ public class WrapperTranslator {
      * @param <T>       泛型
      */
     public <T>QueryWrapper<T> translate(Muggle<T> muggle){
-        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
-        MpCriteria criteria = new MpCriteria();
-        //1.判断查询参数字典是否为空，如不为空则将查询参数转成查询条件集合
-        if (MapUtil.isNotEmpty(muggle.getParams())) {
-            List<QueryCriteria> cs = ParamsConverter.conertMap2Criterias(muggle.getParams());
-            CollUtil.addAll(muggle.getCriterias(), cs);
-        }
-        //2.判断直接查询条件集合是否为空，如果不为空则直接使用查询条件查询
-        List<String> colums = columns(muggle);
-        if (CollUtil.isNotEmpty(muggle.getCriterias())) {
-            muggle.getCriterias().stream()
-                    .filter(t -> CollUtil.isEmpty(colums) || CollUtil.contains(colums, t.getAttribute()))
-                    .forEach(c -> criteria.translate(queryWrapper));
-        }
-        //3.处理子条件集合
-        muggle.getRelations().forEach(r -> WrapperTranslator.translate(r, queryWrapper));
-        //4.设置groupby
-        queryWrapper.groupBy(CollUtil.isNotEmpty(muggle.getGroupBys()),
+        //1.处理查询条件成为mp查询条件
+        QueryWrapper<T> wrapper = genCriterias(muggle);
+        //2.处理子条件集合
+        muggle.getRelations().forEach(r -> WrapperTranslator.translate(r, wrapper));
+        //3.设置groupby
+        wrapper.groupBy(CollUtil.isNotEmpty(muggle.getGroupBys()),
                 muggle.getGroupBys().stream().map(f->WrapperTranslator.column(muggle,f)).collect(Collectors.toList()));
         List<String> fields = CollUtil.newArrayList(muggle.getFields());
         //5.根据查询对象设置查询字段
@@ -154,5 +142,30 @@ public class WrapperTranslator {
      */
     public <T>String column(Muggle<T> muggle,String field){
         return column(muggle.getEntityClass(),field);
+    }
+
+
+    /**
+     * 根据查询条件生成mp查询条件
+     * @param muggle    查询条件
+     * @return
+     * @param <T>   QueryWrapper<T> mp查询条件
+     */
+    <T>QueryWrapper<T> genCriterias(Muggle<T> muggle){
+        QueryWrapper<T> wrapper = new QueryWrapper<>();
+        MpCriteria criteria = new MpCriteria();
+        //1.判断查询参数字典是否为空，如不为空则将查询参数转成查询条件集合
+        if (MapUtil.isNotEmpty(muggle.getParams())) {
+            List<QueryCriteria> cs = ParamsConverter.conertMap2Criterias(muggle.getParams());
+            CollUtil.addAll(muggle.getCriterias(), cs);
+        }
+        //2.判断直接查询条件集合是否为空，如果不为空则直接使用查询条件查询
+        List<String> colums = columns(muggle);
+        if (CollUtil.isNotEmpty(muggle.getCriterias())) {
+            muggle.getCriterias().stream()
+                    .filter(t -> CollUtil.isEmpty(colums) || CollUtil.contains(colums, t.getAttribute()))
+                    .forEach(c -> criteria.translate(wrapper));
+        }
+        return wrapper;
     }
 }
