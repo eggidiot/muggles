@@ -37,9 +37,12 @@ public class WrapperTranslator {
         QueryWrapper<T> wrapper = genCriterias(muggle);
         //2.处理子条件集合
         muggle.getRelations().forEach(r -> WrapperTranslator.translate(r, wrapper));
-        //3.设置groupby
+        //3.设置查询字段
+        //4.设置groupBy
         wrapper.groupBy(CollUtil.isNotEmpty(muggle.getGroupBys()),
                 muggle.getGroupBys().stream().map(f->WrapperTranslator.column(muggle,f)).collect(Collectors.toList()));
+        //5.设置orderBy
+        //5.
         List<String> fields = CollUtil.newArrayList(muggle.getFields());
         //5.根据查询对象设置查询字段
         if (muggle.getSelectors() != null) {
@@ -67,19 +70,19 @@ public class WrapperTranslator {
             if (CollUtil.isEmpty(fields)) {
                 throw new MugglesBizException("至少需要有一个查询字段");
             }
-            queryWrapper.select(fields);
+            wrapper.select(fields);
         }
-        muggle.getOrderBys().forEach(o -> queryWrapper.orderBy(o != null && StrUtil.isNotBlank(o.getField()), o.isAsc(),
+        muggle.getOrderBys().forEach(o -> wrapper.orderBy(o != null && StrUtil.isNotBlank(o.getField()), o.isAsc(),
                 StrUtil.toUnderlineCase(o.getField())));
-        return queryWrapper;
+        return wrapper;
     }
 
     /**
      * 为已知条件添加条件
      * @param muggle    查询条件
      * @param wrapper   mp查询条件
-     * @return  QueryWrapper
-     * @param <T>
+     * @return          QueryWrapper<T>
+     * @param <T>       泛型类型
      */
     public <T>QueryWrapper<T> translate(Muggle<T> muggle, QueryWrapper<T> wrapper) {
         //TODO 翻译条件
@@ -88,11 +91,11 @@ public class WrapperTranslator {
     /**
      * 获取查询条件对应的表字段
      * @param muggle    查询条件
-     * @return
-     * @param <T>
+     * @return          List<String>
+     * @param <T>       泛型类型
      */
     public <T>List<String> columns(Muggle<T> muggle){
-        if (muggle.getEntityClass() != null) {
+        if (muggle != null && muggle.getEntityClass() != null) {
             TableInfo table = TableInfoHelper.getTableInfo(muggle.getEntityClass());
             if (table != null) {
                 List<String> columns = table.getFieldList().stream().map(TableFieldInfo::getColumn).collect(Collectors.toList());
@@ -105,7 +108,8 @@ public class WrapperTranslator {
     /**
      * 根据字段属性名称获取表字段名称
      * @param field 属性名称
-     * @return
+     * @return      字段属性名称
+     * @param <T>   泛型类型
      */
     public <T>String column(String field){
         return column((Class<T>)null, field);
@@ -116,7 +120,7 @@ public class WrapperTranslator {
      * @param entityClass   指定类型
      * @param field         指定属性
      * @return              String
-     * @param <T>
+     * @param <T>           泛型类型
      */
     public <T>String column(Class<T> entityClass,String field){
         if (entityClass != null) {
@@ -125,6 +129,7 @@ public class WrapperTranslator {
                 List<TableFieldInfo> fields = table.getFieldList();
                 for (TableFieldInfo f : fields) {
                     if (f.getField().getName().equals(field)) {
+
                         return f.getColumn();
                     }
                 }
@@ -138,7 +143,7 @@ public class WrapperTranslator {
      * @param muggle    查询条件
      * @param field     指定属性
      * @return          String
-     * @param <T>
+     * @param <T>       泛型类型
      */
     public <T>String column(Muggle<T> muggle,String field){
         return column(muggle.getEntityClass(),field);
@@ -148,8 +153,8 @@ public class WrapperTranslator {
     /**
      * 根据查询条件生成mp查询条件
      * @param muggle    查询条件
-     * @return
-     * @param <T>   QueryWrapper<T> mp查询条件
+     * @return          QueryWrapper<T> mp查询条件
+     * @param <T>       泛型类型
      */
     <T>QueryWrapper<T> genCriterias(Muggle<T> muggle){
         QueryWrapper<T> wrapper = new QueryWrapper<>();
