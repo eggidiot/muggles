@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.criteria.gen;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 
 /**
  * 模糊查询条件
@@ -66,29 +67,29 @@ class Like implements IGenCriteria {
 	 * @return QueryWrapper
 	 */
 	@Override
-	public QueryWrapper translate(QueryWrapper wrapper, MpCriteria criteria) {
+	public QueryWrapper translate(QueryWrapper wrapper, QueryCriteria criteria) {
 		if (not) {
 			switch (mode) {
 				case NONE:
-					wrapper.notLike(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+					wrapper.notLike(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 					break;
 				case LEFT:
-					wrapper.notLikeLeft(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+					wrapper.notLikeLeft(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 					break;
 				case RIGHT:
-					wrapper.notLikeRight(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+					wrapper.notLikeRight(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 					break;
 			}
 		} else {
 			switch (mode) {
 				case NONE:
-					wrapper.like(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+					wrapper.like(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 					break;
 				case LEFT:
-					wrapper.likeLeft(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+					wrapper.likeLeft(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 					break;
 				case RIGHT:
-					wrapper.likeRight(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+					wrapper.likeRight(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 					break;
 			}
 		}

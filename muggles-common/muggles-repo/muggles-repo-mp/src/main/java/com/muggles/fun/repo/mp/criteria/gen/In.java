@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 
 /**
  * 集合查询条件
@@ -31,13 +32,13 @@ class In implements IGenCriteria {
 	 * @return QueryWrapper<?>
 	 */
 	@Override
-	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
+	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, QueryCriteria criteria) {
 		if (ObjectUtil.isNotNull(criteria.getValue())) {
 			JSONArray array = JSONUtil.parseArray(JSONUtil.toJsonStr(criteria.getValue()));
 			if (not) {
-				wrapper.notIn(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
+				wrapper.notIn(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), criteria.getAttribute(), array);
 			} else {
-				wrapper.in(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), StrUtil.toUnderlineCase(criteria.getAttribute()), array);
+				wrapper.in(StrUtil.isNotBlank(criteria.getAttribute()) && CollUtil.isNotEmpty(array), criteria.getAttribute(), array);
 			}
 		}
 		return wrapper;

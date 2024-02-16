@@ -2,6 +2,7 @@ package com.muggles.fun.repo.mp.criteria.gen;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 
 /**
  * is null 条件
@@ -27,11 +28,11 @@ class IsNull implements IGenCriteria {
 	 * @return QueryWrapper<?>
 	 */
 	@Override
-	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
+	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, QueryCriteria criteria) {
 		if (not) {
-			wrapper.isNotNull(StrUtil.isNotBlank(criteria.getAttribute()), StrUtil.toUnderlineCase(criteria.getAttribute()));
+			wrapper.isNotNull(StrUtil.isNotBlank(criteria.getAttribute()), criteria.getAttribute());
 		} else {
-			wrapper.isNull(StrUtil.isNotBlank(criteria.getAttribute()), StrUtil.toUnderlineCase(criteria.getAttribute()));
+			wrapper.isNull(StrUtil.isNotBlank(criteria.getAttribute()), criteria.getAttribute());
 		}
 		return wrapper;
 	}

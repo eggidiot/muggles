@@ -63,10 +63,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * 连表条件，数组形式，父类属性中的params最终也将翻译到该属性
      */
     protected List<OnCriteria> on = new ArrayList<>();
-    /**
-     * 当前对象类型
-     */
-    protected Class<T> entityClass;
+
     /**
      * 默认使用的函数带有ifnull函数模板
      */
@@ -972,4 +969,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
         return func(FuncType.COUNT, fieldName, fieldName);
     }
 
+    public Class<T> getEntityClass(){
+        return (Class<T>) Optional.ofNullable(selector).map(m->m.getClass()).orElse(null);
+    }
 }

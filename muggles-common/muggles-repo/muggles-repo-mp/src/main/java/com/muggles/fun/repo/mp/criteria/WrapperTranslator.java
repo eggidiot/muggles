@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.criteria;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -10,12 +11,14 @@ import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.muggles.fun.basic.exception.MugglesBizException;
+import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.convert.ParamsConverter;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.model.Muggle;
 import com.muggles.fun.repo.mp.criteria.gen.MpCriteria;
 import lombok.experimental.UtilityClass;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,108 +31,116 @@ public class WrapperTranslator {
 
     /**
      * 将muggle通用查询条件翻译成Mybatis-plus里使用的QueryWrapper
-     * @param muggle    通用查询条件
-     * @return          Mp查询对象
-     * @param <T>       泛型
+     *
+     * @param muggle 通用查询条件
+     * @param <T>    泛型
+     * @return Mp查询对象
      */
-    public <T>QueryWrapper<T> translate(Muggle<T> muggle){
+    public <T> QueryWrapper<T> translate(Muggle<T> muggle) {
         //1.处理查询条件成为mp查询条件
         QueryWrapper<T> wrapper = genCriterias(muggle);
         //2.处理子条件集合
         muggle.getRelations().forEach(r -> WrapperTranslator.translate(r, wrapper));
-        //3.设置查询字段
-        //4.设置groupBy
-        wrapper.groupBy(CollUtil.isNotEmpty(muggle.getGroupBys()),
-                muggle.getGroupBys().stream().map(f->WrapperTranslator.column(muggle,f)).collect(Collectors.toList()));
-        //5.设置orderBy
-        //5.
-        List<String> fields = CollUtil.newArrayList(muggle.getFields());
-        //5.根据查询对象设置查询字段
-        if (muggle.getSelectors() != null) {
-            //5.1获取类型的属性列表
-            Map<String, Object> selectorMap = MapUtil.newHashMap();
-            //5.2过滤非NULL字段
-            BeanUtil.beanToMap(muggle.getSelectors(), selectorMap,
-                    CopyOptions.create().setIgnoreError(true).setIgnoreNullValue(true));
-            //5.3找出查询字段集合
-            List<String> names = selectorMap.keySet().stream().filter(key -> CollUtil.contains(colums, field2ColomMap.getOrDefault(key, key)))
-                    .collect(Collectors.toList());
-            //5.4设置selector作为查询字段则将不为null的属性值拼接到fields字段集合中去
-            if (CollUtil.isNotEmpty(names)) {
-                CollUtil.addAll(muggle.getFields(), names);
-            }
-            //5.5判断是否有排除字段的逻辑，有排除逻辑则默认获取所有的数据
-            if (CollUtil.isEmpty(muggle.getFields()) && CollUtil.isNotEmpty(muggle.getExcludes())) {
-                CollUtil.addAll(muggle.getFields(), colums);
-            }
+        //3.设置join查询
+        //TODO
+        //4.设置查询字段
+        List<String> columns = mapField2Colum(muggle.getFields(), muggle.getExcludes(), muggle.getSelector());
+        if (CollUtil.isNotEmpty(columns)) {
+            wrapper.select(columns);
         }
-        //6.根据查询字段值设置查询字段
-        if (CollUtil.isNotEmpty(muggle.getFields())) {
-            fields = mapField2Colum(fields.stream().filter(f -> !mapField2Colum(muggle.getExcludes()).contains(f))
-                    .collect(Collectors.toList());
-            if (CollUtil.isEmpty(fields)) {
-                throw new MugglesBizException("至少需要有一个查询字段");
-            }
-            wrapper.select(fields);
-        }
-        muggle.getOrderBys().forEach(o -> wrapper.orderBy(o != null && StrUtil.isNotBlank(o.getField()), o.isAsc(),
-                StrUtil.toUnderlineCase(o.getField())));
+        //5.设置groupBy
+        List<String> groupBys = columnLimitByEntity(muggle.getEntityClass(),muggle.getGroupBys());
+        wrapper.groupBy(CollUtil.isNotEmpty(groupBys),
+                groupBys.stream().map(f -> WrapperTranslator.column(muggle, f)).collect(Collectors.toList()));
+        //6.设置orderBy
+        List<MuggleParam.OrderBy> orderBys = orderByLimitByEntity(muggle.getEntityClass(),muggle.getOrderBys());
+        orderBys.forEach(o -> wrapper.orderBy(o != null && StrUtil.isNotBlank(o.getField()), o.isAsc(),o.getField()));
         return wrapper;
     }
 
     /**
      * 为已知条件添加条件
-     * @param muggle    查询条件
-     * @param wrapper   mp查询条件
-     * @return          QueryWrapper<T>
-     * @param <T>       泛型类型
+     *
+     * @param muggle  查询条件
+     * @param wrapper mp查询条件
+     * @param <T>     泛型类型
+     * @return QueryWrapper<T>
      */
-    public <T>QueryWrapper<T> translate(Muggle<T> muggle, QueryWrapper<T> wrapper) {
+    public <T> QueryWrapper<T> translate(Muggle<T> muggle, QueryWrapper<T> wrapper) {
         //TODO 翻译条件
         return wrapper;
     }
+
     /**
      * 获取查询条件对应的表字段
-     * @param muggle    查询条件
-     * @return          List<String>
-     * @param <T>       泛型类型
+     *
+     * @param muggle 查询条件
+     * @param <T>    泛型类型
+     * @return List<String>
      */
-    public <T>List<String> columns(Muggle<T> muggle){
+    public <T> List<String> columns(Muggle<T> muggle) {
         if (muggle != null && muggle.getEntityClass() != null) {
-            TableInfo table = TableInfoHelper.getTableInfo(muggle.getEntityClass());
+            return columns(muggle.getEntityClass());
+        }
+        return CollUtil.newArrayList();
+    }
+
+    /**
+     * 获取查询条件对应的表字段
+     *
+     * @param entityClass 指定实体类型
+     * @param <T>         泛型类型
+     * @return List<String>
+     */
+    public <T> List<String> columns(Class<T> entityClass) {
+        if (entityClass != null) {
+            TableInfo table = TableInfoHelper.getTableInfo(entityClass);
             if (table != null) {
                 List<String> columns = table.getFieldList().stream().map(TableFieldInfo::getColumn).collect(Collectors.toList());
-                CollUtil.addAll(columns,table.getKeyColumn());
+                CollUtil.addAll(columns, table.getKeyColumn());
                 return columns.stream().distinct().collect(Collectors.toList());
             }
         }
         return CollUtil.newArrayList();
     }
+
     /**
      * 根据字段属性名称获取表字段名称
+     *
      * @param field 属性名称
-     * @return      字段属性名称
      * @param <T>   泛型类型
+     * @return 字段属性名称
      */
-    public <T>String column(String field){
-        return column((Class<T>)null, field);
+    public <T> String column(String field) {
+        return column((Class<T>) null, field);
+    }
+
+    /**
+     * 根据字段属性名称获取表字段名称
+     *
+     * @param fields 属性名称
+     * @param <T>    泛型类型
+     * @return 字段属性名称
+     */
+    public <T> List<String> columns(List<String> fields) {
+        return columns((Class<T>) null, fields);
     }
 
     /**
      * 根据对象和属性名称获取对应的数据库属性名称
-     * @param entityClass   指定类型
-     * @param field         指定属性
-     * @return              String
-     * @param <T>           泛型类型
+     *
+     * @param entityClass 指定类型
+     * @param field       指定属性
+     * @param <T>         泛型类型
+     * @return String
      */
-    public <T>String column(Class<T> entityClass,String field){
+    public <T> String column(Class<T> entityClass, String field) {
         if (entityClass != null) {
             TableInfo table = TableInfoHelper.getTableInfo(entityClass);
             if (table != null) {
                 List<TableFieldInfo> fields = table.getFieldList();
                 for (TableFieldInfo f : fields) {
                     if (f.getField().getName().equals(field)) {
-
                         return f.getColumn();
                     }
                 }
@@ -139,38 +150,142 @@ public class WrapperTranslator {
     }
 
     /**
-     * 查找指定属性对应的字段
-     * @param muggle    查询条件
-     * @param field     指定属性
-     * @return          String
-     * @param <T>       泛型类型
+     * 根据对象和属性名称获取对应的数据库属性名称
+     *
+     * @param entityClass 指定类型
+     * @param fields      指定属性集合
+     * @param <T>         泛型类型
+     * @return String
      */
-    public <T>String column(Muggle<T> muggle,String field){
-        return column(muggle.getEntityClass(),field);
+    public <T> List<String> columns(Class<T> entityClass, List<String> fields) {
+        if (CollUtil.isEmpty(fields)) {
+            return CollUtil.newArrayList();
+        }
+        return fields.stream().map(f -> column(entityClass, f)).collect(Collectors.toList());
+    }
+
+    /**
+     * 查找指定属性对应的字段
+     *
+     * @param muggle 查询条件
+     * @param field  指定属性
+     * @param <T>    泛型类型
+     * @return String
+     */
+    public <T> String column(Muggle<T> muggle, String field) {
+        return column(muggle != null ? muggle.getEntityClass() : null, field);
     }
 
 
     /**
      * 根据查询条件生成mp查询条件
-     * @param muggle    查询条件
-     * @return          QueryWrapper<T> mp查询条件
-     * @param <T>       泛型类型
+     *
+     * @param muggle 查询条件
+     * @param <T>    泛型类型
+     * @return QueryWrapper<T> mp查询条件
      */
-    <T>QueryWrapper<T> genCriterias(Muggle<T> muggle){
+    <T> QueryWrapper<T> genCriterias(Muggle<T> muggle) {
         QueryWrapper<T> wrapper = new QueryWrapper<>();
-        MpCriteria criteria = new MpCriteria();
         //1.判断查询参数字典是否为空，如不为空则将查询参数转成查询条件集合
         if (MapUtil.isNotEmpty(muggle.getParams())) {
             List<QueryCriteria> cs = ParamsConverter.conertMap2Criterias(muggle.getParams());
             CollUtil.addAll(muggle.getCriterias(), cs);
         }
         //2.判断直接查询条件集合是否为空，如果不为空则直接使用查询条件查询
-        List<String> colums = columns(muggle);
-        if (CollUtil.isNotEmpty(muggle.getCriterias())) {
-            muggle.getCriterias().stream()
-                    .filter(t -> CollUtil.isEmpty(colums) || CollUtil.contains(colums, t.getAttribute()))
-                    .forEach(c -> criteria.translate(wrapper));
+        List<QueryCriteria> criterias = criteriaLimitByEntity(muggle.getEntityClass(), muggle.getCriterias());
+        if (CollUtil.isNotEmpty(criterias)) {
+            criterias.forEach(c -> MpCriteria.translate(wrapper, c));
         }
         return wrapper;
+    }
+
+    /**
+     * 返回对象中可以查询的字段，
+     * --重点：该方法返回的查询字段不做限定，若对应的实体没有返回指定的数据库字段，则默认返回下划线风格字段名称，因为真实的查询中，字段可能存在别名或者聚合函数等名称
+     *
+     * @param fields   查询字段集合
+     * @param excludes 排除查询的字段集合
+     * @param selector 查询模型对象
+     * @param <T>      泛型类型
+     * @return List<String>
+     */
+    <T> List<String> mapField2Colum(List<String> fields, List<String> excludes, T selector) {
+        //0.设置返回值为空集合
+        List<String> result = CollUtil.newArrayList();
+        if (selector != null) {
+            //0.1获取类型的属性列表
+            Map<String, Object> selectorMap = MapUtil.newHashMap();
+            //0.2过滤非NULL字段
+            BeanUtil.beanToMap(selector, selectorMap,
+                    CopyOptions.create().setIgnoreError(true).setIgnoreNullValue(true));
+            if (CollUtil.isNotEmpty(selectorMap)) {
+                CollUtil.addAll(fields, selectorMap.keySet());
+            }
+        }
+        //1.若没有设置查询字段且没设置排除字段则采用默认查询
+        if (CollUtil.isEmpty(fields) && CollUtil.isEmpty(excludes)) {
+            return result;
+        }
+        //2.根据实体类型设置字段
+        Class<?> entityClass = selector != null ? selector.getClass() : null;
+        CollUtil.addAll(result, columns(entityClass, fields).removeAll(columns(entityClass, excludes)));
+        return result;
+    }
+
+    /**
+     * 根据指定的实体限定字段，默认策略丢弃不符合的字段
+     *
+     * @param entityClass 指定实体类型
+     * @param fields      指定字段集合
+     * @param <T>         泛型类型
+     * @return List<String>
+     */
+    public <T> List<String> columnLimitByEntity(Class<T> entityClass, List<String> fields) {
+        Assert.notNull(entityClass,()->new MugglesBizException("指定实体类型不能为Null"));
+        TableInfo table = TableInfoHelper.getTableInfo(entityClass);
+        List<String> fieldList = table.getFieldList().stream().map(TableFieldInfo::getField).map(Field::getName).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(fieldList)){
+            List<String> result = fields.stream().filter(fieldList::contains).collect(Collectors.toList());
+            return result.stream().map(f->column(entityClass,f)).collect(Collectors.toList());
+        }
+        return fields;
+    }
+
+    /**
+     * 根据指定的实体限定字段，默认策略丢弃不符合的字段
+     *
+     * @param entityClass 指定实体类型
+     * @param fields      指定字段集合
+     * @param <T>         泛型类型
+     * @return List<String>
+     */
+    public <T> List<MuggleParam.OrderBy> orderByLimitByEntity(Class<T> entityClass, List<MuggleParam.OrderBy> fields) {
+        Assert.notNull(entityClass,()->new MugglesBizException("指定实体类型不能为Null"));
+        TableInfo table = TableInfoHelper.getTableInfo(entityClass);
+        List<String> fieldList = table.getFieldList().stream().map(TableFieldInfo::getField).map(Field::getName).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(fieldList)){
+            List<MuggleParam.OrderBy> result = fields.stream().filter(f->fieldList.contains(f.getField())).collect(Collectors.toList());
+            return result.stream().map(f->f.setField(column(entityClass,f.getField()))).collect(Collectors.toList());
+        }
+        return fields;
+    }
+
+    /**
+     * 根据指定的实体限定字段，默认策略丢弃不符合的字段
+     *
+     * @param entityClass 指定实体类型
+     * @param fields      指定字段集合
+     * @param <T>         泛型类型
+     * @return List<String>
+     */
+    public <T> List<QueryCriteria> criteriaLimitByEntity(Class<T> entityClass, List<QueryCriteria> fields) {
+        Assert.notNull(entityClass,()->new MugglesBizException("指定实体类型不能为Null"));
+        TableInfo table = TableInfoHelper.getTableInfo(entityClass);
+        List<String> fieldList = table.getFieldList().stream().map(TableFieldInfo::getField).map(Field::getName).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(fieldList)){
+            List<QueryCriteria> result = fields.stream().filter(f->fieldList.contains(f.getAttribute())).collect(Collectors.toList());
+            return result.stream().map(f->f.setAttribute(column(entityClass,f.getAttribute()))).collect(Collectors.toList());
+        }
+        return fields;
     }
 }

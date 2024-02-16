@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.criteria.gen;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.criteria.between.BetweenParam;
 
 /**
@@ -29,7 +30,7 @@ class Between implements IGenCriteria {
 	 * @return QueryWrapper<?>
 	 */
 	@Override
-	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
+	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, QueryCriteria criteria) {
 		if (ObjectUtil.isNotNull(criteria.getValue())) {
 			BetweenParam betweenParam = (BetweenParam) criteria.getValue();
 			if (not) {

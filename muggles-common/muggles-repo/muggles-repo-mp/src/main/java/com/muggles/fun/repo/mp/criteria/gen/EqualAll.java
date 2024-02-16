@@ -2,6 +2,7 @@ package com.muggles.fun.repo.mp.criteria.gen;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 
 import java.util.Map;
 
@@ -20,7 +21,7 @@ class EqualAll implements IGenCriteria {
 	 * @return	QueryWrapper<?>
 	 */
 	@Override
-	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
+	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, QueryCriteria criteria) {
 		Object param = criteria.getValue();
 		Map<String, Object> objectMap = BeanUtil.beanToMap(param, true, true);
 		wrapper.allEq(objectMap);

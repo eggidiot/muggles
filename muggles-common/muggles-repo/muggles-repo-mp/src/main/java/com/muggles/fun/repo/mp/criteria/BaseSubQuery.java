@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.core.toolkit.sql.StringEscape;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.model.Muggle;
 import com.muggles.fun.repo.mp.criteria.gen.MpCriteria;
 import lombok.SneakyThrows;
@@ -23,13 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @ProjectName: tech-platform
- * @Package: com.fline.tp.repo.wrapper.criteria.gen
- * @ClassName: BaseSubQuery
- * @Author: haotang
- * @Description: 公共子查询
- * @Date: 2023/6/1 18:07
- * @Version:
+ * 子查询条件基本构建工具
  */
 @UtilityClass
 public class BaseSubQuery {
@@ -66,7 +61,7 @@ public class BaseSubQuery {
 	 * @return String
 	 */
 	@SneakyThrows
-	public <R> String getSubQuerySql(MpCriteria criteria) {
+	public <R> String getSubQuerySql(QueryCriteria criteria) {
 		Muggle<R> param = (Muggle<R>) criteria.getValue();
 		QueryWrapper<R> queryWrapper = WrapperTranslator.translate(param);
 		// 把子查询queryWrapper转换成sql

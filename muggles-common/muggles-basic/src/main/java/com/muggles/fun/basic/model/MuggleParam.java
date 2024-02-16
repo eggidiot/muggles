@@ -59,7 +59,7 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     /**
      * 查询对象字段限定
      */
-    protected T selectors;
+    protected T selector;
     /**
      * 下一个条件用and或者or连接，true表示用and连接，false表示用or连接
      */
@@ -169,8 +169,8 @@ public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     /**
      * 查询对象字段限定
      */
-    public C setSelectors(T selectors) {
-        this.selectors = selectors;
+    public C setSelector(T selector) {
+        this.selector = selector;
         return (C) this;
     }
 

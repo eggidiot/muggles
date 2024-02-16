@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.criteria.gen;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 
 /**
  * 小于查询条件
@@ -28,11 +29,11 @@ class Less implements IGenCriteria {
 	 * @return QueryWrapper<?>
 	 */
 	@Override
-	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, MpCriteria criteria) {
+	public QueryWrapper<?> translate(QueryWrapper<?> wrapper, QueryCriteria criteria) {
 		if (equal) {
-			wrapper.le(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+			wrapper.le(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 		} else {
-			wrapper.lt(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), StrUtil.toUnderlineCase(criteria.getAttribute()), criteria.getValue());
+			wrapper.lt(StrUtil.isNotBlank(criteria.getAttribute()) && ObjectUtil.isNotNull(criteria.getValue()), criteria.getAttribute(), criteria.getValue());
 		}
 		return wrapper;
 	}
