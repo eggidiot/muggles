@@ -40,7 +40,7 @@ public class WrapperTranslator {
         //1.处理查询条件成为mp查询条件
         QueryWrapper<T> wrapper = genCriterias(muggle);
         //2.处理子条件集合
-        muggle.getRelations().forEach(r -> WrapperTranslator.translate(r, wrapper));
+        muggle.getRelations().forEach(r -> WrapperTranslator.translate(r.setEntityClass(muggle.getEntityClass()), wrapper));
         //3.设置join查询
         //TODO
         //4.设置查询字段
@@ -67,7 +67,17 @@ public class WrapperTranslator {
      * @return QueryWrapper<T>
      */
     public <T> QueryWrapper<T> translate(Muggle<T> muggle, QueryWrapper<T> wrapper) {
-        //TODO 翻译条件
+        switch (muggle.getType()){
+            case AND:
+                wrapper.and(consumer-> criterias(muggle.getEntityClass(),consumer,muggle.getCriterias()));
+                break;
+            case OR:
+                wrapper.or(consumer-> criterias(muggle.getEntityClass(),consumer,muggle.getCriterias()));
+                break;
+            case NESTED:
+                wrapper.nested(consumer-> criterias(muggle.getEntityClass(),consumer,muggle.getCriterias()));
+                break;
+        }
         return wrapper;
     }
 
@@ -186,15 +196,29 @@ public class WrapperTranslator {
      */
     <T> QueryWrapper<T> genCriterias(Muggle<T> muggle) {
         QueryWrapper<T> wrapper = new QueryWrapper<>();
+        List<QueryCriteria> criterias = CollUtil.newArrayList(muggle.getCriterias());
         //1.判断查询参数字典是否为空，如不为空则将查询参数转成查询条件集合
         if (MapUtil.isNotEmpty(muggle.getParams())) {
             List<QueryCriteria> cs = ParamsConverter.conertMap2Criterias(muggle.getParams());
-            CollUtil.addAll(muggle.getCriterias(), cs);
+            CollUtil.addAll(criterias, cs);
         }
+        //2.返回拼装好后的查询条件
+        return criterias(muggle.getEntityClass(), wrapper, criterias);
+    }
+
+    /**
+     * 根据指定类型限定能够拼接的查询条件
+     * @param entityClass   指定类型
+     * @param wrapper       mp查询条件
+     * @param criterias     业务查询条件集合
+     * @return              QueryWrapper<T>
+     * @param <T>           泛型
+     */
+    private <T>QueryWrapper<T> criterias(Class<T> entityClass, QueryWrapper<T> wrapper,List<QueryCriteria> criterias){
         //2.判断直接查询条件集合是否为空，如果不为空则直接使用查询条件查询
-        List<QueryCriteria> criterias = criteriaLimitByEntity(muggle.getEntityClass(), muggle.getCriterias());
-        if (CollUtil.isNotEmpty(criterias)) {
-            criterias.forEach(c -> MpCriteria.translate(wrapper, c));
+        List<QueryCriteria> result = criteriaLimitByEntity(entityClass, criterias);
+        if (CollUtil.isNotEmpty(result)) {
+            result.forEach(c -> MpCriteria.translate(wrapper, c));
         }
         return wrapper;
     }

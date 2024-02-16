@@ -10,7 +10,9 @@ import com.muggles.fun.tools.core.bean.LambdaFunction;
  * 获取对应的子查询参数对象接口
  */
 public interface ISubQuery {
-
+	/**
+	 * 默认根据id作为条件链接字段
+	 */
 	String DEFAULT_COLUMN = "id";
 
 	/**
