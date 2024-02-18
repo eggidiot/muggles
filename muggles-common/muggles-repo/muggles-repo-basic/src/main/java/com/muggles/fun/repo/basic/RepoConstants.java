@@ -82,4 +82,32 @@ public interface RepoConstants extends Constants {
 		 */
 		FULL
 	}
+
+	/**
+	 * 查询字段策略，默认忽略不存在字段
+	 */
+	enum FieldStrategy{
+		/**
+		 * 忽略
+		 */
+		IGNORE,
+		/**
+		 * 报错
+		 */
+		ERROR
+	}
+
+	/**
+	 * 集合查询时集合为空的处理策略
+	 */
+	enum InCondiStrategy{
+		/**
+		 * 忽略
+		 */
+		IGNORE,
+		/**
+		 * 拼接一个1=2的查询条件
+		 */
+		ONE_EQ_TWO
+	}
 }
