@@ -90,13 +90,7 @@ public interface ICrudService<T,C extends MuggleParam<T, C>> {
      * @return  Boolean
      */
     boolean updateBatchById(List<T> list);
-    /**
-     * 将指定条件的记录批量更新诚实体非null字段
-     * @param list  实体记录
-     * @param param 更新条件
-     * @return  Boolean
-     */
-    Boolean updateBatch(List<T> list,C param);
+
     /**
      * 根据实体id批量插入或者更新实体
      * @param list  实体记录

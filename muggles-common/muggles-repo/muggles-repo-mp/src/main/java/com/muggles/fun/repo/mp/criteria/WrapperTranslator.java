@@ -15,6 +15,7 @@ import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.convert.ParamsConverter;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.model.Muggle;
+import com.muggles.fun.repo.mp.MugglePage;
 import com.muggles.fun.repo.mp.criteria.gen.MpCriteria;
 import lombok.experimental.UtilityClass;
 
@@ -81,6 +82,17 @@ public class WrapperTranslator {
         return wrapper;
     }
 
+    /**
+     * 将查询条件中的分页信息，转成分页对象
+     * @param muggle    查询条件
+     * @return          MugglePage<T>
+     * @param <T>       泛型
+     */
+    public <T> MugglePage<T> toPage(Muggle<T> muggle){
+        MugglePage<T> page = new MugglePage<>();
+        page.setCurrent(muggle.getCurrent()).setSize(muggle.getSize());
+        return page;
+    }
     /**
      * 获取查询条件对应的表字段
      *

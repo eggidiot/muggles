@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -67,20 +66,20 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
      */
     @Override
     public boolean updateFieldSelfById(T entity, boolean postive) {
-		Object id = ReflectUtil.getFieldValue(entity, "id");
-		//1.ID为NULL则不允许更新
-		Assert.notNull(id, () -> new MugglesBizException("id不能为空"));
-		ReflectUtil.setFieldValue(entity, "id", null);
+        Object id = ReflectUtil.getFieldValue(entity, "id");
+        //1.ID为NULL则不允许更新
+        Assert.notNull(id, () -> new MugglesBizException("id不能为空"));
+        ReflectUtil.setFieldValue(entity, "id", null);
 
-		QueryWrapper<T> wrapper = Wrappers.<T>query().eq("id", id);
-		Map<String, Object> res = toMap(wrapper, entity, true, postive);
-		//2.更新条件为空则不更新
-		if (CollUtil.isEmpty(res)) {
-			return false;
-		}
+        QueryWrapper<T> wrapper = Wrappers.<T>query().eq("id", id);
+        Map<String, Object> res = toMap(wrapper, entity, true, postive);
+        //2.更新条件为空则不更新
+        if (CollUtil.isEmpty(res)) {
+            return false;
+        }
 
-		//3.判断逻辑删除和乐观锁
-		return SqlHelper.retBool(mapper().updateFieldSelf(tableName(), res, wrapper));
+        //3.判断逻辑删除和乐观锁
+        return SqlHelper.retBool(mapper().updateFieldSelf(tableName(), res, wrapper));
     }
 
     /**
@@ -185,7 +184,7 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean saveBatch(List<T> list) {
-        return saveBatch(list,100);
+        return saveBatch(list, 100);
     }
 
     /**
@@ -219,25 +218,13 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
      * @param ids 实体id集合
      * @return Boolean
      */
-    @Override
-    public boolean removeBatchById(List<Serializable> ids) {
-        return false;
-    }
-
-    /**
-     * 批量删除(jdbc批量提交)
-     *
-     * @param list 主键ID或实体列表(主键ID类型必须与实体类型字段保持一致)
-     * @return 删除结果
-     * @since 3.5.0
-     */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean removeBatchByIds(Collection<?> list) {
-        if (CollUtil.isEmpty(list)) {
+    public boolean removeBatchById(List<Serializable> ids) {
+        if (CollUtil.isEmpty(ids)) {
             return false;
         }
-        return removeBatchByIds(list, 100);
+        return removeBatchByIds(ids, 100);
     }
 
     /**
@@ -251,50 +238,40 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
     }
 
     /**
-     * 批量修改插入
-     *
-     * @param entityList 实体对象集合
-     */
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public boolean saveOrUpdateBatch(Collection<T> entityList) {
-        return saveOrUpdateBatch(entityList, DEFAULT_BATCH_SIZE);
-    }
-
-    /**
      * 获取实体属性键值对，同时更新条件
-     * @param wrapper			mp查询条件
-     * @param entity			包含更新属性的实体对象
-     * @param ignoreNotNumber	是否忽略非数字字段
-     * @param postive			是否增加非负判断
-     * @return                  Map<String, Object>
+     *
+     * @param wrapper         mp查询条件
+     * @param entity          包含更新属性的实体对象
+     * @param ignoreNotNumber 是否忽略非数字字段
+     * @param postive         是否增加非负判断
+     * @return Map<String, Object>
      */
-	public Map<String, Object> toMap(QueryWrapper<T> wrapper, T entity, boolean ignoreNotNumber, boolean postive) {
-		//1.生成属性键值对
-		Map<String, Object> result = MapUtil.newHashMap();
-		List<Field> fields = TableInfoHelper.getAllFields(entity.getClass());
-		//1.处理逻辑删除
-		fields.stream().filter(field -> field.isAnnotationPresent(TableLogic.class)).forEach(field -> {
-			wrapper.eq(StrUtil.toUnderlineCase(field.getName()), Constants.INIT);
-		});
-		//2.处理属性字段以及乐观锁
-		fields.stream()
-				.filter(field -> ObjectUtil.isNotNull(ReflectUtil.getFieldValue(entity, field)))
-				.filter(field -> !ignoreNotNumber || Number.class.isAssignableFrom(field.getType()))
-				.forEach(field -> {
-					Object v = ReflectUtil.getFieldValue(entity, field);
-					if (field.isAnnotationPresent(Version.class)) {
-						wrapper.eq(StrUtil.toUnderlineCase(field.getName()), v);
-						//2.1版本号每次只能涨一个单位
-						result.put(StrUtil.toUnderlineCase(field.getName()), Constants.DEFAULT_OPT);
-						return;
-					}
-					//2.2非负判定
-					if (postive && (new BigDecimal(v.toString()).compareTo(new BigDecimal(0)) < 0)) {
-						wrapper.ge(StrUtil.toUnderlineCase(field.getName()), new BigDecimal(v.toString()).abs());
-					}
-					result.put(StrUtil.toUnderlineCase(field.getName()), v);
-				});
-		return result;
-	}
+    public Map<String, Object> toMap(QueryWrapper<T> wrapper, T entity, boolean ignoreNotNumber, boolean postive) {
+        //1.生成属性键值对
+        Map<String, Object> result = MapUtil.newHashMap();
+        List<Field> fields = TableInfoHelper.getAllFields(entity.getClass());
+        //1.处理逻辑删除
+        fields.stream().filter(field -> field.isAnnotationPresent(TableLogic.class)).forEach(field -> {
+            wrapper.eq(StrUtil.toUnderlineCase(field.getName()), Constants.INIT);
+        });
+        //2.处理属性字段以及乐观锁
+        fields.stream()
+                .filter(field -> ObjectUtil.isNotNull(ReflectUtil.getFieldValue(entity, field)))
+                .filter(field -> !ignoreNotNumber || Number.class.isAssignableFrom(field.getType()))
+                .forEach(field -> {
+                    Object v = ReflectUtil.getFieldValue(entity, field);
+                    if (field.isAnnotationPresent(Version.class)) {
+                        wrapper.eq(StrUtil.toUnderlineCase(field.getName()), v);
+                        //2.1版本号每次只能涨一个单位
+                        result.put(StrUtil.toUnderlineCase(field.getName()), Constants.DEFAULT_OPT);
+                        return;
+                    }
+                    //2.2非负判定
+                    if (postive && (new BigDecimal(v.toString()).compareTo(new BigDecimal(0)) < 0)) {
+                        wrapper.ge(StrUtil.toUnderlineCase(field.getName()), new BigDecimal(v.toString()).abs());
+                    }
+                    result.put(StrUtil.toUnderlineCase(field.getName()), v);
+                });
+        return result;
+    }
 }

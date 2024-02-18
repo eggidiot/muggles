@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.service;
 import com.muggles.fun.basic.model.IMugglePage;
 import com.muggles.fun.repo.basic.model.Muggle;
 import com.muggles.fun.repo.basic.service.IMuggleService;
+import com.muggles.fun.repo.mp.criteria.WrapperTranslator;
 import com.muggles.fun.repo.mp.mapper.CommonMapper;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public T one(Muggle<T> param) {
-        return null;
+        return getOne(WrapperTranslator.translate(param));
     }
 
     /**
@@ -27,7 +28,7 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public List<T> list(Muggle<T> param) {
-        return null;
+        return list(WrapperTranslator.translate(param));
     }
 
     /**
@@ -38,7 +39,7 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public IMugglePage<T> page(Muggle<T> param) {
-        return null;
+        return page(WrapperTranslator.toPage(param),WrapperTranslator.translate(param));
     }
 
     /**
@@ -50,19 +51,7 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public Boolean update(T t, Muggle<T> param) {
-        return null;
-    }
-
-    /**
-     * 将指定条件的记录批量更新诚实体非null字段
-     *
-     * @param list  实体记录
-     * @param param 更新条件
-     * @return Boolean
-     */
-    @Override
-    public Boolean updateBatch(List<T> list, Muggle<T> param) {
-        return null;
+        return update(t, WrapperTranslator.translate(param));
     }
 
     /**
@@ -73,7 +62,7 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public Boolean remove(Muggle<T> param) {
-        return null;
+        return remove(WrapperTranslator.translate(param));
     }
 
     /**
@@ -84,7 +73,7 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public T oneForUpdate(Muggle<T> muggle) {
-        return null;
+        return getOne(WrapperTranslator.translate(muggle).last("for update"));
     }
 
     /**
@@ -95,6 +84,6 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public List<T> listForUpdate(Muggle<T> muggle) {
-        return null;
+        return list(WrapperTranslator.translate(muggle).last("for update"));
     }
 }
