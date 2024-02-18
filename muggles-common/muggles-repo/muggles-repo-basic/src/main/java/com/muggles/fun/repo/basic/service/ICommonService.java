@@ -1,7 +1,7 @@
 package com.muggles.fun.repo.basic.service;
 
 import com.muggles.fun.basic.ICrudService;
-import com.muggles.fun.repo.basic.model.Muggle;
+import com.muggles.fun.basic.model.MuggleParam;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,21 +11,21 @@ import java.util.List;
  *
  * @param <T>
  */
-public interface ICommonService<T> extends ICrudService<T> {
+public interface ICommonService<T,C extends MuggleParam<T, C>> extends ICrudService<T,C> {
 	/**
 	 * 根据 entity 条件，查询一条记录，并锁定
 	 *
 	 * @param muggle 实体对象封装操作类（可以为 null）
 	 * @return T
 	 */
-	T oneForUpdate(Muggle<T> muggle);
+	T oneForUpdate(C muggle);
 	/**
 	 * 根据 entity 条件，查询全部记录，并锁定
 	 *
 	 * @param muggle 实体对象封装操作类（可以为 null）
 	 * @return List<T>
 	 */
-	List<T> listForUpdate(Muggle<T> muggle);
+	List<T> listForUpdate(C muggle);
 	/**
 	 * 根据ID更新字为null
 	 *

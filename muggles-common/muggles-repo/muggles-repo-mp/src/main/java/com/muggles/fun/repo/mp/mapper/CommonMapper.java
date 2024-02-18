@@ -47,8 +47,6 @@ public interface CommonMapper<T> extends BaseMapper<T> {
 		+ "</script>")
 	int updateFieldNUll(@Param("table")String table, @Param("fields") List<String> fields, @Param(Constants.WRAPPER) QueryWrapper<T> wrapper);
 
-
-
 	/**
      * 纯物理删除
      * @param table     表名
@@ -60,5 +58,17 @@ public interface CommonMapper<T> extends BaseMapper<T> {
             + " ${ew.customSqlSegment}"
             + "</script>")
     int deletePhy(@Param("table")String table, @Param(Constants.WRAPPER) QueryWrapper<T> wrapper);
+
+	/**
+	 * 纯物理删除
+	 * @param table     表名
+	 * @param wrapper   删除条件
+	 * @return	删除的记录条数
+	 */
+	@Delete("<script>"
+			+ "update ${table} set ${field} = 0"
+			+ " ${ew.customSqlSegment}"
+			+ "</script>")
+	int recovery(@Param("table")String table,@Param("field") String field, @Param(Constants.WRAPPER) QueryWrapper<T> wrapper);
 }
 

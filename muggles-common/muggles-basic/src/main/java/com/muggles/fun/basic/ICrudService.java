@@ -10,7 +10,7 @@ import java.util.List;
  * 基本CRUD查询service
  * @param <T> 针对泛型对象查询
  */
-public interface ICrudService<T> {
+public interface ICrudService<T,C extends MuggleParam<T, C>> {
     /**
      * 查询全表记录
      * @return	List<T>
@@ -26,24 +26,21 @@ public interface ICrudService<T> {
      * 根据查询条件查询实体第一条记录
      * @param param 查询条件
      * @return  T
-     * @param <C>   条件泛型
      */
-    <C extends MuggleParam<T, C>>T one(C param);
+    T one(C param);
     /**
      * 根据查询条件查询实体集合
      * @param param 查询条件
      * @return  T
-     * @param <C>   条件泛型
      */
-    <C extends MuggleParam<T, C>>List<T> list(C param);
+    List<T> list(C param);
 
     /**
      * 根据查询条件查询实体分页集合
      * @param param 查询条件
      * @return  T
-     * @param <C>   条件泛型
      */
-    <C extends MuggleParam<T, C>> IMugglePage<T> page(C param);
+    IMugglePage<T> page(C param);
 
     /**
      * 新增对象记录
@@ -72,9 +69,8 @@ public interface ICrudService<T> {
      * @param t     实体记录
      * @param param 更新条件
      * @return  Boolean
-     * @param <C>   条件泛型
      */
-    <C extends MuggleParam<T, C>>Boolean update(T t,C param);
+    Boolean update(T t,C param);
 
     /**
      * 根据id删除记录
@@ -99,9 +95,8 @@ public interface ICrudService<T> {
      * @param list  实体记录
      * @param param 更新条件
      * @return  Boolean
-     * @param <C>   条件泛型
      */
-    <C extends MuggleParam<T, C>>Boolean updateBatch(List<T> list,C param);
+    Boolean updateBatch(List<T> list,C param);
     /**
      * 根据实体id批量插入或者更新实体
      * @param list  实体记录
@@ -120,7 +115,6 @@ public interface ICrudService<T> {
      * 根据条件删除实体记录
      * @param param 通用查询参数
      * @return  C
-     * @param <C>   泛型
      */
-    <C extends MuggleParam<T, C>>Boolean remove(C param);
+    Boolean remove(C param);
 }
