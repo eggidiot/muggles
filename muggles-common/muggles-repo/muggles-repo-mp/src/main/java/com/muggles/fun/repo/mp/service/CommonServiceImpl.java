@@ -18,6 +18,7 @@ import com.muggles.fun.basic.Constants;
 import com.muggles.fun.basic.exception.MugglesBizException;
 import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.service.ICommonService;
+import com.muggles.fun.repo.mp.criteria.WrapperTranslator;
 import com.muggles.fun.repo.mp.mapper.CommonMapper;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -252,7 +253,7 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
         List<Field> fields = TableInfoHelper.getAllFields(entity.getClass());
         //1.处理逻辑删除
         fields.stream().filter(field -> field.isAnnotationPresent(TableLogic.class)).forEach(field -> {
-            wrapper.eq(StrUtil.toUnderlineCase(field.getName()), Constants.INIT);
+            wrapper.eq(WrapperTranslator.column(entity.getClass(),field.getName()), Constants.INIT);
         });
         //2.处理属性字段以及乐观锁
         fields.stream()
@@ -261,16 +262,16 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
                 .forEach(field -> {
                     Object v = ReflectUtil.getFieldValue(entity, field);
                     if (field.isAnnotationPresent(Version.class)) {
-                        wrapper.eq(StrUtil.toUnderlineCase(field.getName()), v);
+                        wrapper.eq(WrapperTranslator.column(entity.getClass(),field.getName()), v);
                         //2.1版本号每次只能涨一个单位
-                        result.put(StrUtil.toUnderlineCase(field.getName()), Constants.DEFAULT_OPT);
+                        result.put(WrapperTranslator.column(entity.getClass(),field.getName()), Constants.DEFAULT_OPT);
                         return;
                     }
                     //2.2非负判定
                     if (postive && (new BigDecimal(v.toString()).compareTo(new BigDecimal(0)) < 0)) {
-                        wrapper.ge(StrUtil.toUnderlineCase(field.getName()), new BigDecimal(v.toString()).abs());
+                        wrapper.ge(WrapperTranslator.column(entity.getClass(),field.getName()), new BigDecimal(v.toString()).abs());
                     }
-                    result.put(StrUtil.toUnderlineCase(field.getName()), v);
+                    result.put(WrapperTranslator.column(entity.getClass(),field.getName()), v);
                 });
         return result;
     }
