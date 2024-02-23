@@ -141,11 +141,10 @@ public class WrapperTranslator {
      * 根据字段属性名称获取表字段名称
      *
      * @param fields 属性名称
-     * @param <T>    泛型类型
      * @return 字段属性名称
      */
-    public <T> List<String> columns(List<String> fields) {
-        return columns((Class<T>) null, fields);
+    public List<String> columns(List<String> fields) {
+        return columns((Class<?>) null, fields);
     }
 
     /**
@@ -153,10 +152,9 @@ public class WrapperTranslator {
      *
      * @param entityClass 指定类型
      * @param field       指定属性
-     * @param <T>         泛型类型
      * @return String
      */
-    public <T> String column(Class<T> entityClass, String field) {
+    public String column(Class<?> entityClass, String field) {
         if (entityClass != null) {
             TableInfo table = TableInfoHelper.getTableInfo(entityClass);
             if (table != null) {
@@ -191,10 +189,9 @@ public class WrapperTranslator {
      *
      * @param muggle 查询条件
      * @param field  指定属性
-     * @param <T>    泛型类型
      * @return String
      */
-    public <T> String column(Muggle<T> muggle, String field) {
+    public String column(Muggle<?> muggle, String field) {
         return column(muggle != null ? muggle.getEntityClass() : null, field);
     }
 
