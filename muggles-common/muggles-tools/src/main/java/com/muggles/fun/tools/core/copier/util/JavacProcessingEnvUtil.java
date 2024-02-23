@@ -9,7 +9,6 @@ import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 
 import com.muggles.fun.tools.core.copier.process.AutoCopyProcessor;
-import com.muggles.fun.tools.core.copier.process.Permit;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 
 import javafx.scene.Parent;

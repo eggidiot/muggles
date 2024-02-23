@@ -1,4 +1,4 @@
-package com.muggles.fun.tools.core.copier.process;
+package com.muggles.fun.tools.core.copier.util;
 
 import java.lang.reflect.*;
 
