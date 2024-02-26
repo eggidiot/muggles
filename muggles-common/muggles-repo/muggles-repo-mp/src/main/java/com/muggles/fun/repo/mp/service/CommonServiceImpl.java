@@ -5,7 +5,6 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -16,7 +15,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.muggles.fun.basic.Constants;
 import com.muggles.fun.basic.exception.MugglesBizException;
-import com.muggles.fun.basic.model.MuggleParam;
+import com.muggles.fun.basic.model.IMugglePage;
+import com.muggles.fun.repo.basic.model.Muggle;
 import com.muggles.fun.repo.basic.service.ICommonService;
 import com.muggles.fun.repo.mp.criteria.WrapperTranslator;
 import com.muggles.fun.repo.mp.mapper.CommonMapper;
@@ -35,8 +35,30 @@ import java.util.Map;
  * @param <M>
  * @param <T>
  */
-public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends MuggleParam<T, C>> extends ServiceImpl<M, T> implements ICommonService<T, C> {
+public class CommonServiceImpl<M extends CommonMapper<T>, T> extends ServiceImpl<M, T> implements ICommonService<T> {
 
+
+    /**
+     * 根据 entity 条件，查询一条记录，并锁定
+     *
+     * @param muggle 实体对象封装操作类（可以为 null）
+     * @return T
+     */
+    @Override
+    public T oneForUpdate(Muggle<T> muggle) {
+        return getOne(WrapperTranslator.translate(muggle).last("for update"));
+    }
+
+    /**
+     * 根据 entity 条件，查询全部记录，并锁定
+     *
+     * @param muggle 实体对象封装操作类（可以为 null）
+     * @return List<T>
+     */
+    @Override
+    public List<T> listForUpdate(Muggle<T> muggle) {
+        return list(WrapperTranslator.translate(muggle).last("for update"));
+    }
 
     /**
      * 根据ID更新字为null
@@ -156,6 +178,18 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
     }
 
     /**
+     * 将指定条件的记录更新诚实体非null字段
+     *
+     * @param t     实体记录
+     * @param param 更新条件
+     * @return Boolean
+     */
+    @Override
+    public Boolean update(T t, Muggle<T> param) {
+        return update(t, WrapperTranslator.translate(param));
+    }
+
+    /**
      * 根据 ID 查询
      *
      * @param id 主键ID
@@ -163,6 +197,39 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
     @Override
     public T getById(Serializable id) {
         return mapper().selectById(id);
+    }
+
+    /**
+     * 根据查询条件查询实体第一条记录
+     *
+     * @param param 查询条件
+     * @return T
+     */
+    @Override
+    public T one(Muggle<T> param) {
+        return getOne(WrapperTranslator.translate(param));
+    }
+
+    /**
+     * 根据查询条件查询实体集合
+     *
+     * @param param 查询条件
+     * @return T
+     */
+    @Override
+    public List<T> list(Muggle<T> param) {
+        return list(WrapperTranslator.translate(param));
+    }
+
+    /**
+     * 根据查询条件查询实体分页集合
+     *
+     * @param param 查询条件
+     * @return T
+     */
+    @Override
+    public IMugglePage<T> page(Muggle<T> param) {
+        return page(WrapperTranslator.toPage(param),WrapperTranslator.translate(param));
     }
 
 
@@ -229,6 +296,17 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
     }
 
     /**
+     * 根据条件删除实体记录
+     *
+     * @param param 通用查询参数
+     * @return C
+     */
+    @Override
+    public Boolean remove(Muggle<T> param) {
+        return remove(WrapperTranslator.translate(param));
+    }
+
+    /**
      * 查询所有
      *
      * @see Wrappers#emptyWrapper()
@@ -253,7 +331,7 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
         List<Field> fields = TableInfoHelper.getAllFields(entity.getClass());
         //1.处理逻辑删除
         fields.stream().filter(field -> field.isAnnotationPresent(TableLogic.class)).forEach(field -> {
-            wrapper.eq(WrapperTranslator.column(entity.getClass(),field.getName()), Constants.INIT);
+            wrapper.eq(WrapperTranslator.column(entity.getClass(), field.getName()), Constants.INIT);
         });
         //2.处理属性字段以及乐观锁
         fields.stream()
@@ -262,16 +340,16 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
                 .forEach(field -> {
                     Object v = ReflectUtil.getFieldValue(entity, field);
                     if (field.isAnnotationPresent(Version.class)) {
-                        wrapper.eq(WrapperTranslator.column(entity.getClass(),field.getName()), v);
+                        wrapper.eq(WrapperTranslator.column(entity.getClass(), field.getName()), v);
                         //2.1版本号每次只能涨一个单位
-                        result.put(WrapperTranslator.column(entity.getClass(),field.getName()), Constants.DEFAULT_OPT);
+                        result.put(WrapperTranslator.column(entity.getClass(), field.getName()), Constants.DEFAULT_OPT);
                         return;
                     }
                     //2.2非负判定
                     if (postive && (new BigDecimal(v.toString()).compareTo(new BigDecimal(0)) < 0)) {
-                        wrapper.ge(WrapperTranslator.column(entity.getClass(),field.getName()), new BigDecimal(v.toString()).abs());
+                        wrapper.ge(WrapperTranslator.column(entity.getClass(), field.getName()), new BigDecimal(v.toString()).abs());
                     }
-                    result.put(WrapperTranslator.column(entity.getClass(),field.getName()), v);
+                    result.put(WrapperTranslator.column(entity.getClass(), field.getName()), v);
                 });
         return result;
     }

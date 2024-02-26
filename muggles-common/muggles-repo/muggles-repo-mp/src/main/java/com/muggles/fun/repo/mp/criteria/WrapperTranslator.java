@@ -195,7 +195,6 @@ public class WrapperTranslator {
         return column(muggle != null ? muggle.getEntityClass() : null, field);
     }
 
-
     /**
      * 根据查询条件生成mp查询条件
      *
