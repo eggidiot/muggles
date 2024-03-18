@@ -1,8 +1,8 @@
 package com.muggles.fun.tools.core.test;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
 
+@Data
 public class AccountService {
     private int amount = 100;
 
