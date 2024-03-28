@@ -40,10 +40,6 @@ public class AutoCopyProcessor extends AbstractProcessor {
      */
     private Messager messager;
     /**
-     * 创建TreeMaker和Names所需的上下文
-     */
-    private Context context;
-    /**
      * Java语法树的工具类
      */
     private JavacTrees trees;
@@ -51,10 +47,6 @@ public class AutoCopyProcessor extends AbstractProcessor {
      * 创建语法树节点的工厂类
      */
     private TreeMaker treeMaker;
-    /**
-     * 编译器名称表的访问，提供了一些标准的名称和创建新名称的方法
-     */
-    private Names names;
     /**
      * 元素工具
      */
@@ -72,10 +64,6 @@ public class AutoCopyProcessor extends AbstractProcessor {
      * object类型
      */
     private TypeMirror objectType;
-    /**
-     * 解包后的ProcessingEnvironment，用于访问原始的处理环境
-     */
-    private ProcessingEnvironment unwrappedprocessingEnv;
 
     /**
      * 注解处理器的初始化方法。在此方法中，我们解包ProcessingEnvironment， 并使用它来初始化需要该环境的其他组件。
@@ -84,14 +72,15 @@ public class AutoCopyProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.messager = processingEnv.getMessager();
-        // 使用jbUnwrap方法解包ProcessingEnvironment
-        this.unwrappedprocessingEnv = jbUnwrap(ProcessingEnvironment.class, processingEnv);
-        // 使用解包后的ProcessingEnvironment对象来初始化其他组件
-        this.context = (JavacProcessingEnvUtil.getJavacProcessingEnvironment(unwrappedprocessingEnv,messager).getContext());
+        // 解包后的ProcessingEnvironment，用于访问原始的处理环境
+        ProcessingEnvironment unwrappedprocessingEnv = jbUnwrap(ProcessingEnvironment.class, processingEnv);
+        // 创建TreeMaker和Names所需的上下文
+        Context context = (JavacProcessingEnvUtil.getJavacProcessingEnvironment(unwrappedprocessingEnv, messager).getContext());
         this.trees = JavacTrees.instance(unwrappedprocessingEnv); // 注意这里改为使用解包后的环境
         this.treeMaker = TreeMaker.instance(context);
-        this.names = Names.instance(context);
-        this.elementUtils = (JavacElements)unwrappedprocessingEnv.getElementUtils();
+        // 编译器名称表的访问，提供了一些标准的名称和创建新名称的方法
+        Names names = Names.instance(context);
+        this.elementUtils = (JavacElements) unwrappedprocessingEnv.getElementUtils();
         this.typeUtils = unwrappedprocessingEnv.getTypeUtils();
         this.nullType =
             unwrappedprocessingEnv.getElementUtils().getTypeElement("com.fline.tp.core.convertor.Null").asType();
