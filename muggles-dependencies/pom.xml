@@ -53,6 +53,7 @@
         <mysql.version>8.0.33</mysql.version>
         <cglib.version>3.3.0</cglib.version>
         <kotlin.version>2.0.0-Beta3</kotlin.version>
+        <json-lib.version>2.4</json-lib.version>
     </properties>
 
     <dependencyManagement>
@@ -251,6 +252,13 @@
                 <groupId>cglib</groupId>
                 <artifactId>cglib</artifactId>
                 <version>${cglib.version}</version>
+            </dependency>
+            <!-- json lib -->
+            <dependency>
+                <groupId>net.sf.json-lib</groupId>
+                <artifactId>json-lib</artifactId>
+                <version>${json-lib.version}</version>
+                <classifier>jdk15</classifier>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -38,6 +38,11 @@
                 <artifactId>muggles-repo-basic</artifactId>
                 <version>${muggles.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.muggles.fun</groupId>
+                <artifactId>muggles-dynamic-basic</artifactId>
+                <version>${muggles.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

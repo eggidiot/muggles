@@ -15,10 +15,10 @@
     <packaging>pom</packaging>
 
     <modules>
-        <!--麻瓜动态实体：抹除模块-->
+        <!--麻瓜动态实体：基础模块-->
         <module>muggles-dynamic-basic</module>
+        <!--麻瓜动态实体：实现模块-->
+        <module>muggles-dynamic-default</module>
     </modules>
-
-
 
 </project>

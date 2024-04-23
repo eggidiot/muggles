@@ -10,27 +10,16 @@
         <version>0.9.0</version>
     </parent>
 
-    <artifactId>muggles-dynamic-basic</artifactId>
-    <name>Muggles :: Dynamic Entity Basic</name>
+    <name>Muggles :: Dynamic Entity Default</name>
+    <artifactId>muggles-dynamic-default</artifactId>
     <packaging>jar</packaging>
-
 
     <dependencies>
         <dependency>
             <groupId>com.muggles.fun</groupId>
-            <artifactId>muggles-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.muggles.fun</groupId>
-            <artifactId>muggles-repo-basic</artifactId>
-        </dependency>
-
-        <!-- 第三方 -->
-        <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <classifier>jdk15</classifier>
+            <artifactId>muggles-dynamic-basic</artifactId>
         </dependency>
     </dependencies>
+
 
 </project>
