@@ -45,7 +45,7 @@ public class MethodEnhanceUtil {
         /**
          * 获得目标类的代理对象
          *
-         * @return
+         * @return  Object
          */
         public Object getObject() {
             //1.工具类
@@ -91,8 +91,8 @@ public class MethodEnhanceUtil {
          *
          * @param method 指定方法
          * @param before 前置处理器
-         * @param after
-         * @return
+         * @param after 后置处理器
+         * @return  CglibProxyFactory
          */
         public CglibProxyFactory enhance(Method method, IEnhanceBefore before, IEnhanceAfter after) {
             Assert.notNull(method, () -> new IllegalStateException("指定方法不存在"));
@@ -168,8 +168,8 @@ public class MethodEnhanceUtil {
         /**
          * 返回增强对象
          *
-         * @param <T>
-         * @return
+         * @param <T>   泛型类型
+         * @return  T
          */
         public <T> T get() {
             return (T) getObject();
@@ -228,11 +228,11 @@ public class MethodEnhanceUtil {
     /**
      * 设置某个方法前置拦截，插入业务逻辑
      *
-     * @param before
-     * @param t
-     * @param method
-     * @param <T>
-     * @return
+     * @param before    前置处理器
+     * @param t         原始对象
+     * @param method    拦截方法
+     * @param <T>       泛型类型
+     * @return  T
      */
     public <T> T enhancerBefore(IEnhanceBefore before, T t, String method) {
         return enhancer(t,method,before,null);
@@ -241,11 +241,11 @@ public class MethodEnhanceUtil {
     /**
      * 设置某个方法前置拦截，插入业务逻辑
      *
-     * @param before
-     * @param t
-     * @param method
-     * @param <T>
-     * @return
+     * @param before    前置处理器
+     * @param t         原始对象
+     * @param method    拦截方法
+     * @param <T>       泛型类型
+     * @return  T
      */
     public <T> T enhancerBefore(IEnhanceBefore before, T t, Method method) {
         return enhancer(t,method,before,null);
@@ -254,11 +254,11 @@ public class MethodEnhanceUtil {
     /**
      * 设置某个方法后置拦截，插入业务逻辑
      *
-     * @param t
-     * @param method
-     * @param after
-     * @param <T>
-     * @return
+     * @param t         原始对象
+     * @param method    拦截方法
+     * @param after     后置处理器
+     * @param <T>       泛型类型
+     * @return  T
      */
     public <T> T enhancerAfter(T t, String method, IEnhanceAfter after) {
         return enhancer(t,method,null,after);
@@ -267,11 +267,11 @@ public class MethodEnhanceUtil {
     /**
      * 设置某个方法后置拦截，插入业务逻辑
      *
-     * @param t
-     * @param method
-     * @param after
-     * @param <T>
-     * @return
+     * @param t         原始对象
+     * @param method    拦截方法
+     * @param after     后置处理器
+     * @param <T>       泛型类型
+     * @return  T
      */
     public <T> T enhancerAfter(T t, Method method, IEnhanceAfter after) {
         return enhancer(t,method,null,after);

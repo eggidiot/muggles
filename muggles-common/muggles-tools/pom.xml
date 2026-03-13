@@ -24,6 +24,12 @@
             <artifactId>cglib</artifactId>
         </dependency>
 
+        <!--bytebuddy-->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+        </dependency>
+
         <!--编码辅助工具-->
         <dependency>
             <groupId>org.projectlombok</groupId>

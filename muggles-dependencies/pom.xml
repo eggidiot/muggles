@@ -28,7 +28,7 @@
         <hutool.version>5.8.44</hutool.version>
         <id.version>1.0.6</id.version>
         <mp.weixin.version>4.8.1-20260312.230125</mp.weixin.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <fastjson.version>2.0.61</fastjson.version>
         <ttl.version>2.14.5</ttl.version>
         <oss.version>3.18.5</oss.version>
@@ -57,6 +57,7 @@
         <grpc.version>1.79.0</grpc.version>
         <jsqlparser.version>5.3</jsqlparser.version>
         <easy-aop.version>1.0.0</easy-aop.version>
+        <bytebuddy.version>1.18.7</bytebuddy.version>
     </properties>
 
     <dependencyManagement>
@@ -231,11 +232,23 @@
                 <artifactId>mysql-connector-j</artifactId>
                 <version>${mysql.version}</version>
             </dependency>
-            <!--cglib-->
+            <!--cglib字节码工具-->
             <dependency>
                 <groupId>cglib</groupId>
                 <artifactId>cglib</artifactId>
                 <version>${cglib.version}</version>
+            </dependency>
+            <!--bytebuddy字节码工具-->
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${bytebuddy.version}</version>
+            </dependency>
+            <!--bytebuddy插入jvm工具-->
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${bytebuddy.version}</version>
             </dependency>
             <!--threadforge线程池-->
             <dependency>
@@ -366,6 +379,13 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>

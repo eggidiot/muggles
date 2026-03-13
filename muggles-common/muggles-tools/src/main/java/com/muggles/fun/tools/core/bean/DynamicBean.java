@@ -1,5 +1,6 @@
 package com.muggles.fun.tools.core.bean;
 
+import lombok.Data;
 import net.sf.cglib.beans.BeanGenerator;
 import net.sf.cglib.beans.BeanMap;
 
@@ -8,11 +9,12 @@ import java.util.Map;
 /**
  * 动态代理对象，推荐只代理简单的pojo
  */
-public class DynamicBean {
+@Data
+public class DynamicBean<T> {
 	/**
 	 * 目标对象
 	 */
-    private final Object target;
+    private final T target;
 	/**
 	 * 对象属性集合
 	 */
@@ -23,7 +25,7 @@ public class DynamicBean {
 	 * @param superclass	父类
 	 * @param propertyMap	属性集合
 	 */
-    public DynamicBean(Class<?> superclass, Map<String,Class<?>> propertyMap) {
+    public DynamicBean(Class<T> superclass, Map<String,Class<?>> propertyMap) {
         this.target = generateBean(superclass, propertyMap);
         this.beanMap = BeanMap.create(this.target);
     }
@@ -46,24 +48,16 @@ public class DynamicBean {
         return beanMap.get(property);
     }
 
-	/**
-	 * 获取目标对象
-	 * @return	目标对象
-	 */
-    public Object getTarget() {
-        return this.target;
-    }
-
     /**
      * 根据属性生成对象
 	 * @return	目标对象
      */
-    private Object generateBean(Class<?> superclass, Map<String,Class<?>> propertyMap) {
+    private T generateBean(Class<T> superclass, Map<String,Class<?>> propertyMap) {
         BeanGenerator generator = new BeanGenerator();
         if (null != superclass) {
             generator.setSuperclass(superclass);
         }
         BeanGenerator.addProperties(generator, propertyMap);
-        return generator.create();
+        return (T) generator.create();
     }
 }

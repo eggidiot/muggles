@@ -7,8 +7,10 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ReflectUtil;
 import lombok.experimental.UtilityClass;
+import net.sf.cglib.beans.BeanMap;
 
 import java.beans.PropertyDescriptor;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -23,12 +25,12 @@ public class BeanExtUtil {
     /**
      * 为对象动态扩展属性
      *
-     * @param dest			目标对象
+     * @param source		目标对象
      * @param addProperties	附加属性
      * @return	Object
      */
-    public Object getObject(Object dest, Map<String, Object> addProperties) {
-        PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(ClassUtil.getClass(dest));
+    public <T>T enhance(T source, Map<String, Object> addProperties) {
+        PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(ClassUtil.getClass(source));
         Map<String, Class<?>> propertyMap = MapUtil.newHashMap();
         for (PropertyDescriptor d : descriptors) {
             if (!"class".equalsIgnoreCase(d.getName())) {
@@ -36,26 +38,15 @@ public class BeanExtUtil {
             }
         }
         addProperties.forEach((k, v) -> propertyMap.put(k, v.getClass()));
-        DynamicBean dynamicBean = new DynamicBean(dest.getClass(), propertyMap);
+        DynamicBean<T> dynamicBean = new DynamicBean(source.getClass(), propertyMap);
         propertyMap.forEach((k, v) -> {
             if (!addProperties.containsKey(k)) {
-                dynamicBean.setValue(k, ReflectUtil.getFieldValue(dest, k));
+                dynamicBean.setValue(k, ReflectUtil.getFieldValue(source, k));
             }
         });
         addProperties.forEach(dynamicBean::setValue);
         return dynamicBean.getTarget();
     }
-
-	/**
-	 * 动态扩展属性后转换类型
-	 * @param dest			目标对象
-	 * @param addProperties	附加属性
-	 * @return	T
-	 * @param <T>	泛型
-	 */
-	public <T>T addProps(T dest, Map<String, Object> addProperties) {
-		return (T) getObject(dest,addProperties);
-	}
 
 	/**
 	 * 为对象动态添加属性
@@ -68,7 +59,7 @@ public class BeanExtUtil {
 	public <T>T addProp(T dest, String field,Object value) {
 		Map<String, Object> propFields = MapUtil.newHashMap();
 		propFields.put(field,value);
-		return (T) getObject(dest, propFields);
+		return enhance(dest, propFields);
 	}
 	/**
 	 * 根据字段映射装饰成树形结构
@@ -124,6 +115,23 @@ public class BeanExtUtil {
 			}
 		});
 		return decorastors;
+	}
+
+	/**
+	 * 将cglib增强对象转换为Map，解决hutool JSONUtil无法序列化cglib动态属性的问题。
+	 * hutool检测到$$BeanGeneratorByCGLIB$$类名后会回退到原始类进行内省，导致动态属性丢失。
+	 * 通过BeanMap直接读取所有属性（含动态属性）并转为普通Map。
+	 *
+	 * @param enhanced	cglib增强后的对象
+	 * @return	Map
+	 */
+	public Map<String, Object> toMap(Object enhanced) {
+		BeanMap beanMap = BeanMap.create(enhanced);
+		Map<String, Object> map = new LinkedHashMap<>();
+		for (Object key : beanMap.keySet()) {
+			map.put(String.valueOf(key), beanMap.get(key));
+		}
+		return map;
 	}
 
 	/**
