@@ -2,7 +2,7 @@ package com.muggles.fun.tools.core.test;
 
 import cn.hutool.json.JSONUtil;
 import com.muggles.fun.tools.core.bean.BeanExtUtil;
-import com.muggles.fun.tools.core.bean.DynamicPropertyEnhancer;
+import com.muggles.fun.tools.core.bean.BeanEnhancer;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -55,7 +55,7 @@ public class BeanEnhancePerformanceTest {
             long t1 = System.nanoTime();
             Object cglibResult1 = BeanExtUtil.enhance(src1, new LinkedHashMap<>(fewProps));
             cglibSingle3 = System.nanoTime() - t1;
-            cglibJson1 = JSONUtil.toJsonStr(BeanExtUtil.toMap(cglibResult1));
+            cglibJson1 = JSONUtil.toJsonStr(cglibResult1);
             System.out.println("  cglib      : " + ns2ms(cglibSingle3) + " ms | " + cglibJson1);
         } else {
             System.out.println("  cglib      : [不可用]");
@@ -63,7 +63,7 @@ public class BeanEnhancePerformanceTest {
 
         AccountService src2 = new AccountService();
         long t1 = System.nanoTime();
-        Object buddyResult1 = DynamicPropertyEnhancer.enhance(src2, new LinkedHashMap<>(fewProps));
+        Object buddyResult1 = BeanEnhancer.enhance(src2, new LinkedHashMap<>(fewProps));
         long buddySingle3 = System.nanoTime() - t1;
         String buddyJson1 = JSONUtil.toJsonStr(buddyResult1);
         System.out.println("  ByteBuddy  : " + ns2ms(buddySingle3) + " ms | " + buddyJson1);
@@ -86,7 +86,7 @@ public class BeanEnhancePerformanceTest {
 
         AccountService src4 = new AccountService();
         t1 = System.nanoTime();
-        DynamicPropertyEnhancer.enhance(src4, new LinkedHashMap<>(manyProps));
+        BeanEnhancer.enhance(src4, new LinkedHashMap<>(manyProps));
         long buddySingle20 = System.nanoTime() - t1;
         System.out.println("  ByteBuddy  : " + ns2ms(buddySingle20) + " ms");
 
@@ -100,7 +100,7 @@ public class BeanEnhancePerformanceTest {
             if (cglibAvailable) {
                 BeanExtUtil.enhance(new AccountService(), new LinkedHashMap<>(fewProps));
             }
-            DynamicPropertyEnhancer.enhance(new AccountService(), new LinkedHashMap<>(fewProps));
+            BeanEnhancer.enhance(new AccountService(), new LinkedHashMap<>(fewProps));
         }
 
         long cglibBatch3 = -1;
@@ -117,7 +117,7 @@ public class BeanEnhancePerformanceTest {
 
         t1 = System.nanoTime();
         for (int i = 0; i < BATCH_SIZE; i++) {
-            DynamicPropertyEnhancer.enhance(new AccountService(), new LinkedHashMap<>(fewProps));
+            BeanEnhancer.enhance(new AccountService(), new LinkedHashMap<>(fewProps));
         }
         long buddyBatch3 = System.nanoTime() - t1;
         System.out.println("  ByteBuddy  : " + ns2ms(buddyBatch3) + " ms (avg " + ns2ms(buddyBatch3 / BATCH_SIZE) + " ms/次)");
@@ -132,7 +132,7 @@ public class BeanEnhancePerformanceTest {
             if (cglibAvailable) {
                 BeanExtUtil.enhance(new AccountService(), new LinkedHashMap<>(manyProps));
             }
-            DynamicPropertyEnhancer.enhance(new AccountService(), new LinkedHashMap<>(manyProps));
+            BeanEnhancer.enhance(new AccountService(), new LinkedHashMap<>(manyProps));
         }
 
         long cglibBatch20 = -1;
@@ -149,7 +149,7 @@ public class BeanEnhancePerformanceTest {
 
         t1 = System.nanoTime();
         for (int i = 0; i < BATCH_SIZE; i++) {
-            DynamicPropertyEnhancer.enhance(new AccountService(), new LinkedHashMap<>(manyProps));
+            BeanEnhancer.enhance(new AccountService(), new LinkedHashMap<>(manyProps));
         }
         long buddyBatch20 = System.nanoTime() - t1;
         System.out.println("  ByteBuddy  : " + ns2ms(buddyBatch20) + " ms (avg " + ns2ms(buddyBatch20 / BATCH_SIZE) + " ms/次)");
@@ -167,13 +167,13 @@ public class BeanEnhancePerformanceTest {
 
         if (cglibAvailable) {
             Object cglibObj = BeanExtUtil.enhance(verifySource, new LinkedHashMap<>(verifyProps));
-            String cglibJsonVerify = JSONUtil.toJsonStr(BeanExtUtil.toMap(cglibObj));
+            String cglibJsonVerify = JSONUtil.toJsonStr(cglibObj);
             System.out.println("  cglib     JSON: " + cglibJsonVerify);
         } else {
             System.out.println("  cglib     JSON: [不可用]");
         }
 
-        Object buddyObj = DynamicPropertyEnhancer.enhance(verifySource, new LinkedHashMap<>(verifyProps));
+        Object buddyObj = BeanEnhancer.enhance(verifySource, new LinkedHashMap<>(verifyProps));
         String buddyJsonVerify = JSONUtil.toJsonStr(buddyObj);
         System.out.println("  ByteBuddy JSON: " + buddyJsonVerify);
 

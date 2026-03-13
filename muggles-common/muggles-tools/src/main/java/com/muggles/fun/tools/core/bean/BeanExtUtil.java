@@ -7,10 +7,8 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ReflectUtil;
 import lombok.experimental.UtilityClass;
-import net.sf.cglib.beans.BeanMap;
 
 import java.beans.PropertyDescriptor;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -25,11 +23,11 @@ public class BeanExtUtil {
     /**
      * 为对象动态扩展属性
      *
-     * @param source		目标对象
-     * @param addProperties	附加属性
-     * @return	Object
+     * @param source        目标对象
+     * @param addProperties 附加属性
+     * @return Object
      */
-    public <T>T enhance(T source, Map<String, Object> addProperties) {
+    public <T> T enhance(T source, Map<String, Object> addProperties) {
         PropertyDescriptor[] descriptors = BeanUtil.getPropertyDescriptors(ClassUtil.getClass(source));
         Map<String, Class<?>> propertyMap = MapUtil.newHashMap();
         for (PropertyDescriptor d : descriptors) {
@@ -48,101 +46,89 @@ public class BeanExtUtil {
         return dynamicBean.getTarget();
     }
 
-	/**
-	 * 为对象动态添加属性
-	 * @param dest		目标对象
-	 * @param field		属性名称
-	 * @param value		属性值
-	 * @return	T
-	 * @param <T>		泛型
-	 */
-	public <T>T addProp(T dest, String field,Object value) {
-		Map<String, Object> propFields = MapUtil.newHashMap();
-		propFields.put(field,value);
-		return enhance(dest, propFields);
-	}
-	/**
-	 * 根据字段映射装饰成树形结构
-	 * @param list			集合对象
-	 * @param prop			子级对象通过关联的属性名称，get方法
-	 * @param parentProp	子级对象关联父级对象的属性名称.get方法
-	 * @return	List<T>
-	 * @param <T>	泛型
-	 */
-	public <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp,String childField) {
-		if (CollUtil.isEmpty(list)) {
-			return CollUtil.newArrayList();
-		}
-		Map<Object, List<T>> group = MapUtil.newHashMap();
-		//1.更新树形列表
-		List<T> decorastors = list.stream().map(t->{
-			//1.1.检查是否需要添加子集集合字段
-			if (ReflectUtil.hasField(t.getClass(),childField)){
-				//1.1.1要求对象有一个子集集合的属性，方便起见，指定是List类型的集合，不接受Set，Collect等集合
-				Class<?> clz = ReflectUtil.getField(t.getClass(),childField).getType();
-				Assert.isTrue(List.class.isAssignableFrom(clz), ()->new IllegalArgumentException("指定字段名称绑定了非list类型成员"));
-				//1.1.2子集集合若未初始化，进行初始化
-				if (ReflectUtil.getFieldValue(t,childField) == null) {
-					ReflectUtil.setFieldValue(t, childField, CollUtil.newArrayList());
-				}
-				//1.1.3将子集集合字段和关联映射字段做成K-V形式，方便后续归档
-				Object key = prop.apply(t);
-				if (key != null) {
-					group.put(key, (List<T>) ReflectUtil.getFieldValue(t,childField));
-				}
-				return t;
-			} else {//1.2.需要添加子集集合字段，采用插桩技术，动态添加字段
-				List<T> children = CollUtil.newArrayList();
-				Object key = prop.apply(t);
-				//1.2.1将子集集合字段和关联映射字段做成K-V形式，方便后续归档
-				if (key != null) {
-					group.put(key, children);
-				}
-				//1.2.2返回插桩后的字段
-				return addProp(t, childField,children);
-			}
-		}).collect(Collectors.toList());
-		//2.归档子节点集合
-		Map<?,List<T>> childrenGroup =  decorastors.stream().filter(t->parentProp.apply(t) != null).collect(Collectors.groupingBy(parentProp));
-		decorastors.forEach(t->{
-			Object key = prop.apply(t);
-			if (key != null) {
-				List<T> children = childrenGroup.get(key);
-				if (CollUtil.isNotEmpty(children)) {
-					List<T> fields = group.get(key);
-					CollUtil.addAll(fields, children);
-				}
-			}
-		});
-		return decorastors;
-	}
+    /**
+     * 为对象动态添加属性
+     *
+     * @param dest  目标对象
+     * @param field 属性名称
+     * @param value 属性值
+     * @param <T>   泛型
+     * @return T
+     */
+    public <T> T addProp(T dest, String field, Object value) {
+        Map<String, Object> propFields = MapUtil.newHashMap();
+        propFields.put(field, value);
+        return enhance(dest, propFields);
+    }
 
-	/**
-	 * 将cglib增强对象转换为Map，解决hutool JSONUtil无法序列化cglib动态属性的问题。
-	 * hutool检测到$$BeanGeneratorByCGLIB$$类名后会回退到原始类进行内省，导致动态属性丢失。
-	 * 通过BeanMap直接读取所有属性（含动态属性）并转为普通Map。
-	 *
-	 * @param enhanced	cglib增强后的对象
-	 * @return	Map
-	 */
-	public Map<String, Object> toMap(Object enhanced) {
-		BeanMap beanMap = BeanMap.create(enhanced);
-		Map<String, Object> map = new LinkedHashMap<>();
-		for (Object key : beanMap.keySet()) {
-			map.put(String.valueOf(key), beanMap.get(key));
-		}
-		return map;
-	}
+    /**
+     * 根据字段映射装饰成树形结构
+     *
+     * @param list       集合对象
+     * @param prop       子级对象通过关联的属性名称，get方法
+     * @param parentProp 子级对象关联父级对象的属性名称.get方法
+     * @param <T>        泛型
+     * @return List<T>
+     */
+    public <T> List<T> decorateTree(List<T> list, Function<T, ?> prop, Function<T, ?> parentProp, String childField) {
+        if (CollUtil.isEmpty(list)) {
+            return CollUtil.newArrayList();
+        }
+        Map<Object, List<T>> group = MapUtil.newHashMap();
+        //1.更新树形列表
+        List<T> decorastors = list.stream().map(t -> {
+            //1.1.检查是否需要添加子集集合字段
+            if (ReflectUtil.hasField(t.getClass(), childField)) {
+                //1.1.1要求对象有一个子集集合的属性，方便起见，指定是List类型的集合，不接受Set，Collect等集合
+                Class<?> clz = ReflectUtil.getField(t.getClass(), childField).getType();
+                Assert.isTrue(List.class.isAssignableFrom(clz), () -> new IllegalArgumentException("指定字段名称绑定了非list类型成员"));
+                //1.1.2子集集合若未初始化，进行初始化
+                if (ReflectUtil.getFieldValue(t, childField) == null) {
+                    ReflectUtil.setFieldValue(t, childField, CollUtil.newArrayList());
+                }
+                //1.1.3将子集集合字段和关联映射字段做成K-V形式，方便后续归档
+                Object key = prop.apply(t);
+                if (key != null) {
+                    group.put(key, (List<T>) ReflectUtil.getFieldValue(t, childField));
+                }
+                return t;
+            } else {//1.2.需要添加子集集合字段，采用插桩技术，动态添加字段
+                List<T> children = CollUtil.newArrayList();
+                Object key = prop.apply(t);
+                //1.2.1将子集集合字段和关联映射字段做成K-V形式，方便后续归档
+                if (key != null) {
+                    group.put(key, children);
+                }
+                //1.2.2返回插桩后的字段
+                return addProp(t, childField, children);
+            }
+        }).collect(Collectors.toList());
+        //2.归档子节点集合
+        Map<?, List<T>> childrenGroup = decorastors.stream().filter(t -> parentProp.apply(t) != null).collect(Collectors.groupingBy(parentProp));
+        decorastors.forEach(t -> {
+            Object key = prop.apply(t);
+            if (key != null) {
+                List<T> children = childrenGroup.get(key);
+                if (CollUtil.isNotEmpty(children)) {
+                    List<T> fields = group.get(key);
+                    CollUtil.addAll(fields, children);
+                }
+            }
+        });
+        return decorastors;
+    }
 
-	/**
-	 * 默认使用children作为子节点集合的字段名称
-	 * @param list			集合对象
-	 * @param prop			子级对象通过关联的属性名称，get方法
-	 * @param parentProp	子级对象关联父级对象的属性名称.get方法
-	 * @return	List<T>
-	 * @param <T>	泛型
-	 */
-	public <T>List<T> decorateTree(List<T> list, Function<T,?> prop,Function<T,?> parentProp) {
-		return decorateTree(list,prop,parentProp,"children");
-	}
+    /**
+     * 默认使用children作为子节点集合的字段名称
+     *
+     * @param list       集合对象
+     * @param prop       子级对象通过关联的属性名称，get方法
+     * @param parentProp 子级对象关联父级对象的属性名称.get方法
+     * @param <T>        泛型
+     * @return List<T>
+     */
+    public <T> List<T> decorateTree(List<T> list, Function<T, ?> prop, Function<T, ?> parentProp) {
+        return decorateTree(list, prop, parentProp, "children");
+    }
+
 }
