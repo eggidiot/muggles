@@ -5,17 +5,17 @@ import java.util.List;
 /**
  * 值处理器链对象
  */
-public interface IValueHandleChain {
+public interface IValueHandleChain<T,R> {
 
     /**
      * 本责任链是否支持对象处理
      * @param value 呗处理对象
-     * @return
+     * @return  boolean
      */
     default boolean support(Object value){
         boolean res = false;
-        List<IValueHandle> chain = getChain();
-        for (IValueHandle handle: chain) {
+        List<IValueHandle<T,R>> chain = getChain();
+        for (IValueHandle<T,R> handle: chain) {
             res = handle.support(value);
             if (res) {
                 break;
@@ -26,17 +26,17 @@ public interface IValueHandleChain {
 
     /**
      * 获取链中所有元素
-     * @return
+     * @return  List<IValueHandle<T,R>>
      */
-    List<IValueHandle> getChain();
+    List<IValueHandle<T,R>> getChain();
     /**
      * 注册值处理器
-     * @param handle
-     * @param index
-     * @return
+     * @param handle    处理器
+     * @param index     处理器下标
+     * @return  List<IValueHandle<T,R>>
      */
-    default List<IValueHandle> register(IValueHandle handle, Integer index){
-        List<IValueHandle> chain = getChain();
+    default List<IValueHandle<T,R>> register(IValueHandle<T,R> handle, Integer index){
+        List<IValueHandle<T,R>> chain = getChain();
         //1.插入位置大于或者等于目前链中元素个数，则插入在链末端
         if (index >= chain.size()) {
             chain.add(handle);

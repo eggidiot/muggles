@@ -5,10 +5,10 @@ import java.util.function.Function;
 /**
  * 值处理链
  */
-public interface IValueHandle extends Function {
+public interface IValueHandle<T, R> extends Function<T, R> {
     /**
      * 是否支持处理值
-     * @return
+     * @return  boolean
      */
     default boolean support(Object value){
         return true;
@@ -19,7 +19,7 @@ public interface IValueHandle extends Function {
      * @param chain 多个处理器形成的责任链
      * @return  新返回值
      */
-    default Object handle(Object value, IValueHandleChain chain){
+    default R handle(T value, IValueHandleChain chain){
         if (support(value)) {
             value = apply(value);
         }

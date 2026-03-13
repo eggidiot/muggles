@@ -1,7 +1,5 @@
 package com.muggles.fun.basic.anno;
 
-import com.muggles.fun.basic.Constants;
-
 import java.lang.annotation.*;
 
 /**
@@ -14,12 +12,14 @@ public @interface MuggleField {
 
     /**
      * 模型名称
+     *
      * @return String
      */
     String name() default "";
 
     /**
      * 字段默认值
+     *
      * @return String
      */
     String value() default "";
