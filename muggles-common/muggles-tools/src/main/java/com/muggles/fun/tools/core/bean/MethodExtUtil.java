@@ -19,7 +19,7 @@ import java.util.Map;
  */
 @Slf4j
 @UtilityClass
-public class MethodEnhanceUtil {
+public class MethodExtUtil {
 
     /**
      * 方法增强内置工厂
