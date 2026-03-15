@@ -10,7 +10,7 @@ public interface IValueHandle<T, R> extends Function<T, R> {
      * 是否支持处理值
      * @return  boolean
      */
-    default boolean support(Object value){
+    default boolean support(T value){
         return true;
     }
     /**
@@ -21,7 +21,7 @@ public interface IValueHandle<T, R> extends Function<T, R> {
      */
     default R handle(T value, IValueHandleChain chain){
         if (support(value)) {
-            value = apply(value);
+            return apply(value);
         }
         return chain.process(value);
     }

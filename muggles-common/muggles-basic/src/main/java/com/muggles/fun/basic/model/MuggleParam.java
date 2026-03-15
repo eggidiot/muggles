@@ -100,7 +100,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
     }
     /**
      * 设置连接符
-     * @param relationType
+     * @param relationType 连接符
      */
     public C setRelationType(Constants.RelationType relationType) {
         this.relationType = relationType;

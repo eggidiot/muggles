@@ -63,8 +63,8 @@ public class R<T> implements Serializable {
      * 网络请求成功返回，默认不包含任何业务数据
      * 如果没有业务数据返回可以设置业务值为布尔行
      *
-     * @param <T>
-     * @return
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     public static <T> R<T> ok() {
         return restResult(null, Constants.SUCCESS, null);
@@ -73,9 +73,9 @@ public class R<T> implements Serializable {
     /**
      * 网络请求成功返回，设置返回业务数据
      *
-     * @param data 业务数据
-     * @param <T>
-     * @return
+     * @param data  业务数据
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     public static <T> R<T> ok(T data) {
         return restResult(data, Constants.SUCCESS, null);
@@ -85,10 +85,10 @@ public class R<T> implements Serializable {
      * 网络请求成功返回，设置业务数据和提示消息
      * 不建议使用，提示消息一般和错误返回一起使用
      *
-     * @param data 业务数据
-     * @param msg  提示消息
-     * @param <T>
-     * @return
+     * @param data  业务数据
+     * @param msg   提示消息
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     public static <T> R<T> ok(T data, String msg) {
         return restResult(data, Constants.SUCCESS, msg);
@@ -98,8 +98,8 @@ public class R<T> implements Serializable {
      * 网络请求失败返回，表示本次请求行为与预期不一致
      * 错误返回最好包含错误提示消息，不建议使用
      *
-     * @param <T>
-     * @return
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     public static <T> R<T> failed() {
         return restResult(null, Constants.FAIL, null);
@@ -108,9 +108,9 @@ public class R<T> implements Serializable {
     /**
      * 网络请求失败返回，表示本次请求行为与预期不一致，错误提示问题
      *
-     * @param msg 提示消息
-     * @param <T>
-     * @return
+     * @param msg   提示消息
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     public static <T> R<T> failed(String msg) {
         return restResult(null, Constants.FAIL, msg);
@@ -119,10 +119,10 @@ public class R<T> implements Serializable {
     /**
      * 网络请求失败返回，表示本次请求行为与预期不一致，错误提示问题
      *
-     * @param code 业务返回值
-     * @param msg  错误提示
-     * @param <T>
-     * @return
+     * @param code  业务返回值
+     * @param msg   错误提示
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     public static <T> R<T> failed(int code, String msg) {
         return restResult(null, code, msg);
@@ -131,11 +131,11 @@ public class R<T> implements Serializable {
     /**
      * 网络请求结果，表示本次网络请求成功或者失败，并设置成功的业务数据或者失败的提示消息
      *
-     * @param data 业务数据
-     * @param code 本次请求结果编码，200为成功，其他都为失败,默认失败为500
-     * @param msg  错误提示消息
-     * @param <T>
-     * @return
+     * @param data  业务数据
+     * @param code  本次请求结果编码，200为成功，其他都为失败,默认失败为500
+     * @param msg   错误提示消息
+     * @param <T>   参数类型
+     * @return  R<T>
      */
     private static <T> R<T> restResult(T data, int code, String msg) {
         return new R().setData(data).setCode(code).setMsg(msg);
