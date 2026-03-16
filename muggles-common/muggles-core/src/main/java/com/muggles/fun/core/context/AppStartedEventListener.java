@@ -2,7 +2,6 @@ package com.muggles.fun.core.context;
 
 import com.muggles.fun.core.config.CoreConfigProperties;
 import com.muggles.fun.core.config.JacksonConfig;
-import com.muggles.fun.core.context.TaskProcessor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class AppStartedEventListener {
     /**
      * tomcat启动完成监听事件
      *
-     * @param event
+     * @param event 程序启动时间
      */
     @EventListener
     public void listener(ApplicationStartedEvent event) {

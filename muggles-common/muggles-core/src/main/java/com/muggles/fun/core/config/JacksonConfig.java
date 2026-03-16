@@ -1,6 +1,5 @@
 package com.muggles.fun.core.config;
 
-import com.muggles.fun.basic.Constants;
 import com.muggles.fun.core.config.time.DateModule;
 import com.muggles.fun.core.config.time.DateTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +11,6 @@ import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomize
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.time.ZoneId;
-import java.util.Locale;
-import java.util.TimeZone;
-
 
 /**
  * jackson配置时间序列对象
@@ -38,13 +32,13 @@ public class JacksonConfig {
     /**
      * jackson配置
      *
-     * @return  JsonMapperBuilderCustomizer
+     * @return JsonMapperBuilderCustomizer
      */
     @Bean
     public JsonMapperBuilderCustomizer customizer() {
         return builder -> {
             builder.addModule(new DateModule());
-            builder.addModule(new DateTimeModule(configProperties.getFormat(),configProperties.isTimestamp()));
+            builder.addModule(new DateTimeModule(configProperties.getFormat(), configProperties.isTimestamp()));
         };
     }
 }

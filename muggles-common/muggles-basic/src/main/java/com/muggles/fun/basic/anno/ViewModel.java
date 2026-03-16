@@ -11,4 +11,10 @@ public @interface ViewModel {
      * @return	Class
      */
     Class<? extends IViewConverter> converter() default IViewConverter.class;
+    /**
+     * 默认token生成键
+     *
+     * @return  String
+     */
+    String dataKey() default "#result?.data";
 }

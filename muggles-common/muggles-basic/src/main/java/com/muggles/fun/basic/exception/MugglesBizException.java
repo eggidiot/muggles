@@ -35,7 +35,7 @@ public class MugglesBizException extends RuntimeException {
 	}
 
 	/**
-	 * message占位符的方式创建FlineBizException对象
+	 * message占位符的方式创建MugglesBizException对象
 	 *
 	 * @param message 错误提示信息构造方法 占位符用{}的方式提供
 	 * @param args    参数字符串数组

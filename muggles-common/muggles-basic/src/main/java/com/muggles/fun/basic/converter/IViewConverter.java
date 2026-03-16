@@ -27,7 +27,7 @@ public interface IViewConverter<T,R> extends MFunction<T,R> {
      * 转化分页对象
      *
      * @param page 分页对象
-     * @return IFlinePage<R>
+     * @return IMugglePage<R>
      */
     IMugglePage<R> applyPage(IMugglePage<T> page);
 }
