@@ -1,19 +1,26 @@
 package com.muggles.fun.core.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import tools.jackson.databind.JavaType;
 
 /**
  * 请求处理器
  */
 public class MuggleParamHandler extends ParamValueHandler implements HandlerMethodArgumentResolver {
+    /**
+     * 是否支持参数解析
+     * @param parameter 参数对象
+     * @return  boolean
+     */
     @Override
-    public boolean supportsParameter(MethodParameter parameter) {
+    public boolean supportsParameter(@NotNull MethodParameter parameter) {
         return false;
     }
 

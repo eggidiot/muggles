@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 核心配置
  */
 @Data
-@ConfigurationProperties(prefix = "fline.core.config")
+@ConfigurationProperties(prefix = "muggle.core.config")
 public class CoreConfigProperties {
 
     /**

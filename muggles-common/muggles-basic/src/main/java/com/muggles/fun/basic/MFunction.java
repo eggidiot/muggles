@@ -1,4 +1,4 @@
-package com.muggles.fun.tools.core.bean;
+package com.muggles.fun.basic;
 
 import java.io.Serializable;
 import java.util.function.Function;
@@ -11,5 +11,5 @@ import java.util.function.Function;
  * @param <R> 返回类型
  */
 @FunctionalInterface
-public interface SFunction<T, R> extends Function<T, R>, Serializable {
+public interface MFunction<T, R> extends Function<T, R>, Serializable {
 }

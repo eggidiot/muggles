@@ -2,7 +2,7 @@ package com.muggles.fun.tools.core.bean;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
-import com.muggles.fun.basic.SFunction;
+import com.muggles.fun.basic.MFunction;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -287,7 +287,7 @@ public class MethodEnhancer {
 	 * @param <T>    泛型类型
 	 * @return T
 	 */
-	public <T> T enhancerBefore(IEnhanceBefore before, T t, SFunction<T, ?> method) {
+	public <T> T enhancerBefore(IEnhanceBefore before, T t, MFunction<T, ?> method) {
 		return enhancer(t, resolveMethodName(method), before, null);
 	}
 
@@ -312,7 +312,7 @@ public class MethodEnhancer {
 	 * @param <T>    泛型类型
 	 * @return T
 	 */
-	public <T> T enhancerAfter(T t, SFunction<T, ?> method, IEnhanceAfter after) {
+	public <T> T enhancerAfter(T t, MFunction<T, ?> method, IEnhanceAfter after) {
 		return enhancer(t, resolveMethodName(method), null, after);
 	}
 
@@ -400,7 +400,7 @@ public class MethodEnhancer {
 	 * @param <T>  泛型类型
 	 * @return 方法名
 	 */
-	private <T> String resolveMethodName(SFunction<T, ?> func) {
+	private <T> String resolveMethodName(MFunction<T, ?> func) {
 		try {
 			Method writeReplace = func.getClass().getDeclaredMethod("writeReplace");
 			writeReplace.setAccessible(true);

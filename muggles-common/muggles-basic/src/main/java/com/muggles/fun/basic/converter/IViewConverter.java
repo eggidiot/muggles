@@ -1,6 +1,6 @@
 package com.muggles.fun.basic.converter;
 
-import com.muggles.fun.basic.SFunction;
+import com.muggles.fun.basic.MFunction;
 import com.muggles.fun.basic.model.IMugglePage;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * @param <T>
  * @param <R>
  */
-public interface IViewConverter<T,R> extends SFunction<T,R> {
+public interface IViewConverter<T,R> extends MFunction<T,R> {
     /**
      * 转化集合对象
      *

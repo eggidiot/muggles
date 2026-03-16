@@ -1,5 +1,6 @@
 package com.muggles.fun.core.handler;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.MethodParameter;
 
 /**
@@ -16,7 +17,7 @@ public class MuggleValueHandler extends ReturnValueHandler{
      * {@code false} otherwise
      */
     @Override
-    public boolean supportsReturnType(MethodParameter returnType) {
+    public boolean supportsReturnType(@NotNull MethodParameter returnType) {
         return false;
     }
 }
