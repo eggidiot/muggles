@@ -1,4 +1,4 @@
-package com.muggles.fun.core.encrpyt;
+package com.muggles.fun.core.encrypt;
 
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import lombok.Data;
@@ -26,7 +26,7 @@ public class JasyptConfig {
     /**
      * 加密工具类
      */
-    @Bean(name = "desencrypt")
+    @Bean(name = "encryptor")
     StringEncryptor encryptor() {
         DefaultEncryptor encryptor = new DefaultEncryptor();
         encryptor.getStandardPBEStringEncryptor().setPassword(getPassword());

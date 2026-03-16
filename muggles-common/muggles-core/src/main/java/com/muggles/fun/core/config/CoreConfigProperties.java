@@ -1,6 +1,6 @@
 package com.muggles.fun.core.config;
 
-import com.fline.tp.core.Constants;
+import com.muggles.fun.basic.Constants;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;

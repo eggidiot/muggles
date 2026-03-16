@@ -1,4 +1,4 @@
-package com.muggles.fun.core.encrpyt;
+package com.muggles.fun.core.encrypt;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -6,11 +6,7 @@ import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
 /**
- * @BelongsProject: tech-platform
- * @Author:
- * @CreateTime: 2022-08-05  17:45
- * @Description: 默认编码器
- * @Version: 1.0
+ * 默认编码器
  */
 @Data
 @Accessors(chain = true)

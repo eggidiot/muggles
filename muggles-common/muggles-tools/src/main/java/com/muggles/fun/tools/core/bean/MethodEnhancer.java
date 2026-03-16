@@ -2,6 +2,7 @@ package com.muggles.fun.tools.core.bean;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
+import com.muggles.fun.basic.SFunction;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;

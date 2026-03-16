@@ -30,10 +30,11 @@
             <artifactId>byte-buddy</artifactId>
         </dependency>
 
-        <!--编码辅助工具-->
+        <!--麻瓜基础模块-->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>com.muggles.fun</groupId>
+            <artifactId>muggles-basic</artifactId>
+            <version>${muggles.version}</version>
         </dependency>
 
         <!--SLF日志-->

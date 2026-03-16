@@ -1,14 +1,13 @@
 package com.muggles.fun.core.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.core.GenericTypeResolver;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.type.TypeFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -23,14 +22,14 @@ public abstract class ParamValueHandler {
     /**
      * jackson书写对象
      */
-    protected ObjectMapper objectMapper;
+    protected JsonMapper jsonMapper;
 
     /**
      * 将{@link Type} 转化为Jackson需要的{com.fasterxml.jackson.databind.JavaType}
      */
     public JavaType getJavaType(Type type, Class<?> contextClass) {
         //MAPPER这个可以使用ObjectMapperUtils中ObjectMapper
-        TypeFactory typeFactory = objectMapper.getTypeFactory();
+        TypeFactory typeFactory = jsonMapper.getTypeFactory();
         //这种是处理public <T extends User> T testEnvV3(@JsonParam("users") List<T> user) 这种类型。
         return typeFactory.constructType(GenericTypeResolver.resolveType(type, contextClass));
     }
@@ -38,8 +37,8 @@ public abstract class ParamValueHandler {
     /**
      * 将Object对象转换为具体的对象类型（支持泛型）
      */
-    public <T> T value(String rawValue, JavaType javaType) throws JsonProcessingException {
-        return objectMapper.readValue(rawValue, javaType);
+    public <T> T value(String rawValue, JavaType javaType){
+        return jsonMapper.readValue(rawValue, javaType);
     }
 
     /**

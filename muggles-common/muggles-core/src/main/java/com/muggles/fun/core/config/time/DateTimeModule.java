@@ -2,19 +2,19 @@ package com.muggles.fun.core.config.time;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.muggles.fun.basic.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.datatype.jsr310.PackageVersion;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.json.PackageVersion;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.module.SimpleModule;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 
@@ -52,14 +52,14 @@ public class DateTimeModule extends SimpleModule {
     public DateTimeModule(String format, Boolean timestamp) {
         super(PackageVersion.VERSION);
         this.addSerializer(LocalDateTime.class, new TsLocalDateTimeSerializer(format, timestamp));
-        this.addDeserializer(LocalDateTime.class, new TsLocalDateDeserializer(format, timestamp));
+        this.addDeserializer(LocalDateTime.class, new TsLocalDateTimeDeserializer(format, timestamp));
     }
 
     /**
      * 默认采用字符串形式格式化时间
      */
     @RequiredArgsConstructor
-    public static class TsLocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
+    public static class TsLocalDateTimeSerializer extends ValueSerializer<LocalDateTime> {
 
         /**
          * 日期格式
@@ -69,25 +69,24 @@ public class DateTimeModule extends SimpleModule {
          * 是否返回时间戳
          */
         final Boolean timestamp;
-
         /**
          * 序列化时间方法
          *
-         * @param value    时间对象值
-         * @param g        JSON对象生成器
-         * @param provider 可提供默认包含的可序列化组件的提供对象
+         * @param value     时间对象值
+         * @param gen       JSON对象生成器
+         * @param ctxt      可提供默认包含的可序列化组件的提供对象
          */
         @Override
-        public void serialize(LocalDateTime value, JsonGenerator g, SerializerProvider provider) throws IOException {
+        public void serialize(LocalDateTime value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
             //1.为Null值则不序列化操作
             if (ObjectUtil.isNull(value)) {
                 return;
             }
             //2.判断是否时间戳方式序列化
             if (Boolean.TRUE.equals(timestamp)) {
-                g.writeObject(LocalDateTimeUtil.toEpochMilli(value));
+                gen.writeNumber(LocalDateTimeUtil.toEpochMilli(value));
             } else {
-                g.writeString(LocalDateTimeUtil.format(value, format));
+                gen.writeString(LocalDateTimeUtil.format(value, format));
             }
         }
     }
@@ -96,7 +95,7 @@ public class DateTimeModule extends SimpleModule {
      * 默认将字符串时间输出成LocalDateTime
      */
     @RequiredArgsConstructor
-    public static class TsLocalDateDeserializer extends JsonDeserializer<LocalDateTime> {
+    public static class TsLocalDateTimeDeserializer extends ValueDeserializer<LocalDateTime> {
         /**
          * 日期格式
          */
@@ -105,7 +104,6 @@ public class DateTimeModule extends SimpleModule {
          * 是否返回时间戳
          */
         final Boolean timestamp;
-
         /**
          * 将字符串反序列化成时间对象
          *
@@ -114,7 +112,7 @@ public class DateTimeModule extends SimpleModule {
          * @return  LocalDateTime
          */
         @Override
-        public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
             //1.时间戳格式
             if (Boolean.TRUE.equals(timestamp)) {
                 return LocalDateTimeUtil.of(p.getLongValue());

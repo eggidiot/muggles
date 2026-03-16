@@ -1,7 +1,6 @@
 package com.muggles.fun.core.config;
 
 import cn.hutool.core.collection.CollUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.muggles.fun.core.handler.MuggleParamHandler;
 import com.muggles.fun.core.handler.MuggleValueHandler;
@@ -17,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ import java.util.List;
 @EnableScheduling
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "fline.core.web", name = "config", havingValue = "auto", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "muggle.core.web", name = "config", havingValue = "auto", matchIfMissing = true)
 public class WebMvcConfig implements InitializingBean {
 
 	/**
@@ -40,7 +40,7 @@ public class WebMvcConfig implements InitializingBean {
 	/**
 	 * jackson书写对象
 	 */
-	final ObjectMapper objectMapper;
+	final JsonMapper jsonMapper;
 
 	/**
 	 * Invoked by the containing {@code BeanFactory} after it has set all bean properties
@@ -52,12 +52,12 @@ public class WebMvcConfig implements InitializingBean {
 	public void afterPropertiesSet() {
 		//1.设置返回值处理器
 		List<HandlerMethodReturnValueHandler> handlers = CollUtil.newArrayList(requestMappingHandlerAdapter.getReturnValueHandlers());
-		handlers.add(0, new MuggleValueHandler().setObjectMapper(objectMapper));
+		handlers.add(0, new MuggleValueHandler().setObjectMapper(jsonMapper));
 		requestMappingHandlerAdapter.setReturnValueHandlers(handlers);
 		//2.设置参数处理器
 		List<HandlerMethodArgumentResolver> resolvers = CollUtil.newArrayList(requestMappingHandlerAdapter.getArgumentResolvers());
 		MuggleParamHandler resolver = new MuggleParamHandler();
-		resolver.setObjectMapper(objectMapper);
+		resolver.setJsonMapper(jsonMapper);
 		resolvers.add(0, resolver);
 		requestMappingHandlerAdapter.setArgumentResolvers(resolvers);
 	}

@@ -1,6 +1,5 @@
 package com.muggles.fun.core.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +7,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * 转换VO对象的分装
@@ -19,7 +19,7 @@ public abstract class ReturnValueHandler implements HandlerMethodReturnValueHand
 	/**
 	 * JACKSON书写JSON对象
 	 */
-	private ObjectMapper objectMapper;
+	private JsonMapper objectMapper;
 
 	/**
 	 * Handle the given return value by adding attributes to the model and
