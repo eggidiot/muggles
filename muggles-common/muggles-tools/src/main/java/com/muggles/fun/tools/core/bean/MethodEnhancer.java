@@ -9,9 +9,11 @@ import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -58,11 +60,13 @@ public class MethodEnhancer {
 		 */
 		public Object getObject() {
 			try {
-				Class<?> proxyClass = BYTE_BUDDY.subclass(target.getClass())
+				Class<?> targetClass = target.getClass();
+				Class<?> proxyClass = BYTE_BUDDY.subclass(targetClass)
 						.method(ElementMatchers.any())
 						.intercept(InvocationHandlerAdapter.of(this))
 						.make()
-						.load(target.getClass().getClassLoader())
+						.load(targetClass.getClassLoader(), ClassLoadingStrategy.UsingLookup.of(
+								MethodHandles.privateLookupIn(targetClass, MethodHandles.lookup())))
 						.getLoaded();
 				return proxyClass.getDeclaredConstructor().newInstance();
 			} catch (Exception e) {

@@ -8,6 +8,8 @@ import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FieldAccessor;
 
+import java.lang.invoke.MethodHandles;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -123,9 +125,14 @@ public class DynamicBuddy<T> {
 					.withParameters(propType)
 					.intercept(FieldAccessor.ofField(propName));
 		}
-		return builder.make()
-				.load(superclass.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
-				.getLoaded();
+		try {
+			return builder.make()
+					.load(superclass.getClassLoader(), ClassLoadingStrategy.UsingLookup.of(
+							MethodHandles.privateLookupIn(superclass, MethodHandles.lookup())))
+					.getLoaded();
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException("Failed to create lookup for class: " + superclass.getName(), e);
+		}
 	}
 
 	/**
