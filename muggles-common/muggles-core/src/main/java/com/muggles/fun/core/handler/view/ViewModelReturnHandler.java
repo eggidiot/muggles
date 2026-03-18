@@ -1,14 +1,6 @@
 package com.muggles.fun.core.handler.view;
 
-import cn.hutool.core.lang.Assert;
-import cn.hutool.core.util.ReflectUtil;
-import com.muggles.fun.basic.anno.ViewModel;
-import com.muggles.fun.basic.converter.IViewConverter;
-import com.muggles.fun.basic.exception.MugglesBizException;
-import com.muggles.fun.basic.handler.IValueHandleChain;
-import com.muggles.fun.basic.model.IMugglePage;
 import com.muggles.fun.core.handler.MuggleValueHandler;
-import com.muggles.fun.tools.core.spel.SpelUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,7 +12,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
+import java.util.*;
 
 /**
  * 转换VO对象的分装
@@ -30,82 +22,111 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 public class ViewModelReturnHandler extends MuggleValueHandler {
+    /**
+     * 简易工厂方法模式
+     */
+    Map<Class<? extends Annotation>, AbstractViewModelHandler> handlerMap = new LinkedHashMap<>();
 
-	/**
-	 * 注解标记集合
-	 */
-	List<? extends Annotation> annotations;
-	/**
-	 * 返回值处理器链
-	 */
-	IValueHandleChain valueHandleChain;
-	/**
-	 * Whether the given {@linkplain MethodParameter method return type} is
-	 * supported by this handler.
-	 *
-	 * @param returnType the method return type to check
-	 * @return {@code true} if this handler supports the supplied return type;
-	 * {@code false} otherwise
-	 */
-	@Override
-	public boolean supportsReturnType(MethodParameter returnType) {
-		return returnType.hasParameterAnnotation(ViewModel.class) || returnType.hasMethodAnnotation(ViewModel.class);
-	}
+    /**
+     * Whether the given {@linkplain MethodParameter method return type} is
+     * supported by this handler.
+     *
+     * @param returnType the method return type to check
+     * @return {@code true} if this handler supports the supplied return type;
+     * {@code false} otherwise
+     */
+    @Override
+    public boolean supportsReturnType(@NotNull MethodParameter returnType) {
+        for (Class<? extends Annotation> annoClazz : handlerMap.keySet()) {
+            if (returnType.hasParameterAnnotation(annoClazz) || returnType.hasMethodAnnotation(annoClazz)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Handle the given return value by adding attributes to the model and
-	 * setting a view or setting the
-	 * {@link ModelAndViewContainer#setRequestHandled} flag to {@code true}
-	 * to indicate the response has been handled directly.
-	 *
-	 * @param returnValue  the value returned from the handler method
-	 * @param returnType   the type of the return value. This type must have
-	 *                     previously been passed to {@link #supportsReturnType} which must
-	 *                     have returned {@code true}.
-	 * @param mavContainer the ModelAndViewContainer for the current request
-	 * @param webRequest   the current request
-	 * @throws Exception if the return value handling results in an error
-	 */
-	@Override
-	public void handleReturnValue(Object returnValue, @NotNull MethodParameter returnType, ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {
-		mavContainer.setRequestHandled(true);
-		HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
-		assert response != null;
-		response.setContentType("application/json;charset=UTF-8");
-		if (returnValue == null) {
-			return;
-		}
-		//1.获取转换目标参数
-		ViewModel toVo = returnType.getMethodAnnotation(ViewModel.class);
-		assert toVo != null;
-		Class<?> converterClass = toVo.converter();
-		Assert.notEquals(converterClass, IViewConverter.class,()->new MugglesBizException("没有设置正确的视图转换器"));
-		//2.看看外层包裹的是否是ResponseResult
-		Object data = SpelUtil.dataInfo(toVo.dataKey(), returnValue);
-		if (data == null) {
-			response.getWriter().write(getJsonMapper().writeValueAsString(returnValue));
-			return;
-		}
-		//3.通过转换器转换视图对象
-		IViewConverter<?,?> func = (IViewConverter<?,?>) ReflectUtil.newInstance(converterClass);
-		response.getWriter().write(getJsonMapper().writeValueAsString(convert(data, toVo.dataKey(), func)));
-	}
+    /**
+     * Handle the given return value by adding attributes to the model and
+     * setting a view or setting the
+     * {@link ModelAndViewContainer#setRequestHandled} flag to {@code true}
+     * to indicate the response has been handled directly.
+     *
+     * @param returnValue  the value returned from the handler method
+     * @param returnType   the type of the return value. This type must have
+     *                     previously been passed to {@link #supportsReturnType} which must
+     *                     have returned {@code true}.
+     * @param mavContainer the ModelAndViewContainer for the current request
+     * @param webRequest   the current request
+     * @throws Exception if the return value handling results in an error
+     */
+    @Override
+    public void handleReturnValue(Object returnValue, @NotNull MethodParameter returnType, ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {
+        mavContainer.setRequestHandled(true);
+        HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
+        assert response != null;
+        response.setContentType("application/json;charset=UTF-8");
+        if (returnValue == null) {
+            return;
+        }
+        //1.创建MV处理器责任链
+        ViewModelHandlerChain chain = genHandlersDependOnMethodAnnos(returnType);
+        response.getWriter().write(getJsonMapper().writeValueAsString(chain.process(returnValue)));
+    }
 
-	/**
-	 * 返回视图转换以后的对象
-	 * @param data		原始对象
-	 * @param spel		spel表达式
-	 * @param converter	转换器
-	 * @return	Object
-	 */
-	Object convert(Object data,String spel, IViewConverter converter) {
-		if (List.class.isAssignableFrom(data.getClass())) {
-			return SpelUtil.wrapperInfo(spel, data, converter.applyList((List) data));
-		} else if (IMugglePage.class.isAssignableFrom(data.getClass())) {
-			return SpelUtil.wrapperInfo(spel, data, converter.applyPage((IMugglePage) data));
-		} else {
-			return SpelUtil.wrapperInfo(spel, data, converter.apply(data));
-		}
-	}
+    /**
+     * 根据方法注解
+     *
+     * @param returnType 返回值参数
+     * @return List<AbstractViewModelHandler>
+     */
+    ViewModelHandlerChain genHandlersDependOnMethodAnnos(MethodParameter returnType) {
+        LinkedHashMap<Annotation, AbstractViewModelHandler> chain = new LinkedHashMap<>();
+        handlerMap.keySet().forEach(annoClazz -> {
+            if (returnType.hasParameterAnnotation(annoClazz) || returnType.hasMethodAnnotation(annoClazz)) {
+                Annotation anno =  returnType.getParameterAnnotation(annoClazz) == null ? returnType.getMethodAnnotation(annoClazz) : returnType.getParameterAnnotation(annoClazz) ;
+                if (anno != null) {
+                    chain.put(anno, handlerMap.get(annoClazz));
+                }
+            }
+        });
+        return new ViewModelHandlerChain().setChain(chain);
+    }
 
+    /**
+     * 对指定的模型视图注册对应的视图处理器
+     *
+     * @param clazz   模型视图注解类
+     * @param handler 模型视图处理器
+     */
+    public void register(Class<? extends Annotation> clazz, AbstractViewModelHandler handler, int index) {
+        //1.插入位置大于集合尺寸，默认插入最后
+        if (index >= handlerMap.size()) {
+            handlerMap.put(clazz, handler);
+            return;
+        }
+        //2.插入位置小于0，默认插入最前
+        Map<Class<? extends Annotation>, AbstractViewModelHandler> oldMap = handlerMap;
+        handlerMap = new LinkedHashMap<>();
+        if (index < 0) {
+            handlerMap.put(clazz, handler);
+            handlerMap.putAll(oldMap);
+        }
+        //3.插入指定位置
+        int i = 0;
+        for (Map.Entry<Class<? extends Annotation>, AbstractViewModelHandler> entry : oldMap.entrySet()) {
+            if (i++ == index) {
+                handlerMap.put(clazz, handler);
+            }
+            handlerMap.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * 默认插入最后
+     * @param clazz   模型视图注解类
+     * @param handler 模型视图处理器
+     */
+    public void register(Class<? extends Annotation> clazz, AbstractViewModelHandler handler) {
+        register(clazz, handler,handlerMap.size());
+    }
 }

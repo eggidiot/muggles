@@ -88,6 +88,9 @@ public interface IValueHandleChain {
      * @return  R
      */
     default <T,R>R process(T value){
+        if (getChain().isEmpty()) {
+            return (R) value;
+        }
         IValueHandle<T,R> handle = current();
         return handle.handle(value,this);
     }
