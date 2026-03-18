@@ -20,7 +20,7 @@ public abstract class ReturnValueHandler implements HandlerMethodReturnValueHand
 	/**
 	 * JACKSON书写JSON对象
 	 */
-	private JsonMapper objectMapper;
+	private JsonMapper jsonMapper;
 
 	/**
 	 * Handle the given return value by adding attributes to the model and

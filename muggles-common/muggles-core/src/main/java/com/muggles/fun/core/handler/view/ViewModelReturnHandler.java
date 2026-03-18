@@ -5,34 +5,40 @@ import cn.hutool.core.util.ReflectUtil;
 import com.muggles.fun.basic.anno.ViewModel;
 import com.muggles.fun.basic.converter.IViewConverter;
 import com.muggles.fun.basic.exception.MugglesBizException;
+import com.muggles.fun.basic.handler.IValueHandleChain;
 import com.muggles.fun.basic.model.IMugglePage;
+import com.muggles.fun.core.handler.MuggleValueHandler;
 import com.muggles.fun.tools.core.spel.SpelUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import tools.jackson.databind.json.JsonMapper;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 /**
  * 转换VO对象的分装
  */
+@EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Data
 @Accessors(chain = true)
-public class ViewModelReturnHandler implements HandlerMethodReturnValueHandler {
+public class ViewModelReturnHandler extends MuggleValueHandler {
+
 	/**
-	 * JACKSON书写JSON对象
+	 * 注解标记集合
 	 */
-	private JsonMapper jsonMapper;
-
-
+	List<? extends Annotation> annotations;
+	/**
+	 * 返回值处理器链
+	 */
+	IValueHandleChain valueHandleChain;
 	/**
 	 * Whether the given {@linkplain MethodParameter method return type} is
 	 * supported by this handler.
@@ -77,12 +83,12 @@ public class ViewModelReturnHandler implements HandlerMethodReturnValueHandler {
 		//2.看看外层包裹的是否是ResponseResult
 		Object data = SpelUtil.dataInfo(toVo.dataKey(), returnValue);
 		if (data == null) {
-			response.getWriter().write(jsonMapper.writeValueAsString(returnValue));
+			response.getWriter().write(getJsonMapper().writeValueAsString(returnValue));
 			return;
 		}
 		//3.通过转换器转换视图对象
 		IViewConverter<?,?> func = (IViewConverter<?,?>) ReflectUtil.newInstance(converterClass);
-		response.getWriter().write(jsonMapper.writeValueAsString(convert(data, toVo.dataKey(), func)));
+		response.getWriter().write(getJsonMapper().writeValueAsString(convert(data, toVo.dataKey(), func)));
 	}
 
 	/**

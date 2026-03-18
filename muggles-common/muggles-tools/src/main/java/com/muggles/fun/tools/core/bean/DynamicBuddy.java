@@ -1,6 +1,5 @@
 package com.muggles.fun.tools.core.bean;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ReflectUtil;
 import lombok.Data;
 import net.bytebuddy.ByteBuddy;
@@ -10,7 +9,6 @@ import net.bytebuddy.implementation.FieldAccessor;
 
 import java.lang.invoke.MethodHandles;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -52,7 +52,7 @@ public class WebMvcConfig implements InitializingBean {
 	public void afterPropertiesSet() {
 		//1.设置返回值处理器
 		List<HandlerMethodReturnValueHandler> handlers = CollUtil.newArrayList(requestMappingHandlerAdapter.getReturnValueHandlers());
-		handlers.add(0, new MuggleValueHandler().setObjectMapper(jsonMapper));
+		handlers.add(0, new MuggleValueHandler().setJsonMapper(jsonMapper));
 		requestMappingHandlerAdapter.setReturnValueHandlers(handlers);
 		//2.设置参数处理器
 		List<HandlerMethodArgumentResolver> resolvers = CollUtil.newArrayList(requestMappingHandlerAdapter.getArgumentResolvers());
