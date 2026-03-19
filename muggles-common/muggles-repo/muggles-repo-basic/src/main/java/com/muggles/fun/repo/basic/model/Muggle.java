@@ -77,6 +77,10 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     private IFieldMapping mapping;
     /**
+     * 分页时是否执行count操作
+     */
+    private Boolean searchCount = true;
+    /**
      * 默认使用的函数带有ifnull函数模板
      */
     @Getter
@@ -700,6 +704,60 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     public <R>Muggle<T> fullJoin(Muggle<R> joinInfo){
         this.joins.add(joinInfo.setJoin(JoinType.FULL).outAlias(getAlias()));
         return this;
+    }
+    /**
+     * 设置连表查询条件，使用Consumer配置连接信息
+     * @param type      连表类型
+     * @param clazz     连接实体类型
+     * @param consumer  连接信息配置
+     * @return  Muggle<T>
+     * @param <R>   外连对象的泛型
+     */
+    public <R> Muggle<T> join(JoinType type, Class<R> clazz, Consumer<Muggle<R>> consumer) {
+        Muggle<R> joinInfo = new Muggle<R>().setEntityClass(clazz);
+        consumer.accept(joinInfo);
+        this.joins.add(joinInfo.setJoin(type).outAlias(getAlias()));
+        return this;
+    }
+    /**
+     * 内连接查询，使用Consumer配置连接信息
+     * @param clazz     连接实体类型
+     * @param consumer  连接信息配置
+     * @return  Muggle<T>
+     * @param <R>   泛型类型
+     */
+    public <R> Muggle<T> join(Class<R> clazz, Consumer<Muggle<R>> consumer) {
+        return join(JoinType.INNER, clazz, consumer);
+    }
+    /**
+     * 左连接查询，使用Consumer配置连接信息
+     * @param clazz     连接实体类型
+     * @param consumer  连接信息配置
+     * @return  Muggle<T>
+     * @param <R>   泛型类型
+     */
+    public <R> Muggle<T> leftJoin(Class<R> clazz, Consumer<Muggle<R>> consumer) {
+        return join(JoinType.LEFT, clazz, consumer);
+    }
+    /**
+     * 右连接查询，使用Consumer配置连接信息
+     * @param clazz     连接实体类型
+     * @param consumer  连接信息配置
+     * @return  Muggle<T>
+     * @param <R>   泛型类型
+     */
+    public <R> Muggle<T> rightJoin(Class<R> clazz, Consumer<Muggle<R>> consumer) {
+        return join(JoinType.RIGHT, clazz, consumer);
+    }
+    /**
+     * 全连接查询，使用Consumer配置连接信息
+     * @param clazz     连接实体类型
+     * @param consumer  连接信息配置
+     * @return  Muggle<T>
+     * @param <R>   泛型类型
+     */
+    public <R> Muggle<T> fullJoin(Class<R> clazz, Consumer<Muggle<R>> consumer) {
+        return join(JoinType.FULL, clazz, consumer);
     }
     /**
      * 设置连表on条件，作为子表查询时用

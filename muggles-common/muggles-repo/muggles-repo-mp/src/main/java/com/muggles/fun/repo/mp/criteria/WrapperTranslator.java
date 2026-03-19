@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.muggles.fun.basic.exception.MugglesBizException;
 import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.converter.ParamsConverter;
@@ -88,9 +89,10 @@ public class WrapperTranslator {
      * @return          MugglePage<T>
      * @param <T>       泛型
      */
-    public <T> MugglePage<T> toPage(Muggle<T> muggle){
-        MugglePage<T> page = new MugglePage<>();
+    public <T> Page<T> toPage(Muggle<T> muggle){
+        Page<T> page = new Page<>();
         page.setCurrent(muggle.getCurrent()).setSize(muggle.getSize());
+        page.setSearchCount(muggle.getSearchCount());
         return page;
     }
     /**

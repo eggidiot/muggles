@@ -1,7 +1,9 @@
 package com.muggles.fun.repo.mp.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.muggles.fun.basic.model.IMugglePage;
 import com.muggles.fun.repo.basic.model.Muggle;
+import com.muggles.fun.repo.basic.model.MugglePage;
 import com.muggles.fun.repo.basic.service.IMuggleService;
 import com.muggles.fun.repo.mp.criteria.WrapperTranslator;
 import com.muggles.fun.repo.mp.mapper.CommonMapper;
@@ -39,7 +41,11 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public IMugglePage<T> page(Muggle<T> param) {
-        return page(WrapperTranslator.toPage(param),WrapperTranslator.translate(param));
+        Page<T> result = page(WrapperTranslator.toPage(param),WrapperTranslator.translate(param));
+        MugglePage<T> page = new MugglePage<>();
+        page.setCurrent(result.getCurrent())
+                .setSize(result.getSize()).setTotal(result.getTotal()).setPages(result.getPages()).setRecords(result.getRecords());
+        return page;
     }
 
     /**
