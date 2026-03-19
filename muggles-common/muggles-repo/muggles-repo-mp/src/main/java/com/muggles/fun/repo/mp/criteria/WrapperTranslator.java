@@ -16,7 +16,6 @@ import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.converter.ParamsConverter;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.model.Muggle;
-import com.muggles.fun.repo.basic.model.MugglePage;
 import com.muggles.fun.repo.mp.criteria.gen.MpCriteria;
 import lombok.experimental.UtilityClass;
 
