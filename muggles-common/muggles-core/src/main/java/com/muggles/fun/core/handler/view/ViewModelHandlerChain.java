@@ -3,7 +3,6 @@ package com.muggles.fun.core.handler.view;
 import cn.hutool.core.collection.CollUtil;
 import com.muggles.fun.basic.handler.IValueHandle;
 import com.muggles.fun.basic.handler.IValueHandleChain;
-import com.muggles.fun.tools.core.collections.map.LinkedMapUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -19,19 +18,21 @@ public class ViewModelHandlerChain implements IValueHandleChain {
     /**
      * 值处理器集合
      */
-    LinkedHashMap<? extends Annotation,AbstractViewModelHandler> chain = new LinkedHashMap<>();
+    List<AbstractViewModelHandler> chain;
     /**
      * 当前处理器下标
      */
     int currentIndex = 0;
 
+    /**
+     * 获取当前模型视图处理器
+     * @return  AbstractViewModelHandler
+     */
     @Override
     public AbstractViewModelHandler current() {
         if (currentIndex < chain.size()) {
-            return Objects.requireNonNull(LinkedMapUtil.getEntryByIndex(chain, currentIndex)).getValue();
+            return chain.get(currentIndex);
         }
         return null;
     }
-
-
 }

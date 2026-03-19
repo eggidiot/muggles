@@ -25,7 +25,7 @@ public class ViewModelReturnHandler extends MuggleValueHandler {
     /**
      * 简易工厂方法模式
      */
-    Map<Class<? extends Annotation>, AbstractViewModelHandler> handlerMap = new LinkedHashMap<>();
+    static Map<Class<? extends Annotation>, AbstractViewModelHandler> handlerMap = new LinkedHashMap<>();
 
     /**
      * Whether the given {@linkplain MethodParameter method return type} is
@@ -80,12 +80,15 @@ public class ViewModelReturnHandler extends MuggleValueHandler {
      * @return List<AbstractViewModelHandler>
      */
     ViewModelHandlerChain genHandlersDependOnMethodAnnos(MethodParameter returnType) {
-        LinkedHashMap<Annotation, AbstractViewModelHandler> chain = new LinkedHashMap<>();
+        List<AbstractViewModelHandler> chain = new ArrayList<>();
         handlerMap.keySet().forEach(annoClazz -> {
             if (returnType.hasParameterAnnotation(annoClazz) || returnType.hasMethodAnnotation(annoClazz)) {
                 Annotation anno =  returnType.getParameterAnnotation(annoClazz) == null ? returnType.getMethodAnnotation(annoClazz) : returnType.getParameterAnnotation(annoClazz) ;
-                if (anno != null) {
-                    chain.put(anno, handlerMap.get(annoClazz));
+                //1.将对应的注解对象设置到对应的处理器中去
+                if (anno != null && handlerMap.get(annoClazz) == null) {
+                    AbstractViewModelHandler handler = handlerMap.get(annoClazz);
+                    handler.setAnno(anno);
+                    chain.add(handler);
                 }
             }
         });
@@ -95,27 +98,26 @@ public class ViewModelReturnHandler extends MuggleValueHandler {
     /**
      * 对指定的模型视图注册对应的视图处理器
      *
-     * @param clazz   模型视图注解类
      * @param handler 模型视图处理器
      */
-    public void register(Class<? extends Annotation> clazz, AbstractViewModelHandler handler, int index) {
+    public static void register(AbstractViewModelHandler handler, int index) {
         //1.插入位置大于集合尺寸，默认插入最后
         if (index >= handlerMap.size()) {
-            handlerMap.put(clazz, handler);
+            handlerMap.put(handler.getAnnotation(), handler);
             return;
         }
         //2.插入位置小于0，默认插入最前
         Map<Class<? extends Annotation>, AbstractViewModelHandler> oldMap = handlerMap;
         handlerMap = new LinkedHashMap<>();
         if (index < 0) {
-            handlerMap.put(clazz, handler);
+            handlerMap.put(handler.getAnnotation(), handler);
             handlerMap.putAll(oldMap);
         }
         //3.插入指定位置
         int i = 0;
         for (Map.Entry<Class<? extends Annotation>, AbstractViewModelHandler> entry : oldMap.entrySet()) {
             if (i++ == index) {
-                handlerMap.put(clazz, handler);
+                handlerMap.put(handler.getAnnotation(), handler);
             }
             handlerMap.put(entry.getKey(), entry.getValue());
         }
@@ -123,10 +125,9 @@ public class ViewModelReturnHandler extends MuggleValueHandler {
 
     /**
      * 默认插入最后
-     * @param clazz   模型视图注解类
      * @param handler 模型视图处理器
      */
-    public void register(Class<? extends Annotation> clazz, AbstractViewModelHandler handler) {
-        register(clazz, handler,handlerMap.size());
+    public static void register(AbstractViewModelHandler handler) {
+        register(handler,handlerMap.size());
     }
 }

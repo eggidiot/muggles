@@ -2,10 +2,12 @@ package com.muggles.fun.core.config;
 
 import cn.hutool.core.collection.CollUtil;
 
+import com.muggles.fun.basic.anno.ViewModel;
 import com.muggles.fun.core.handler.MuggleParamHandler;
 import com.muggles.fun.core.handler.MuggleValueHandler;
 import com.muggles.fun.core.handler.view.AutoUserResolverHandler;
 import com.muggles.fun.core.handler.view.ViewModelReturnHandler;
+import com.muggles.fun.core.handler.view.ViewModelhandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -62,5 +64,7 @@ public class WebMvcConfig implements InitializingBean {
 		resolver.setJsonMapper(jsonMapper);
 		resolvers.addFirst(resolver);
 		requestMappingHandlerAdapter.setArgumentResolvers(resolvers);
+		//3.此处设置模型视图转换处理器
+		ViewModelReturnHandler.register(new ViewModelhandler());
 	}
 }
