@@ -81,6 +81,7 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-bom</artifactId>
                 <version>${mp.version}</version>
+                <scope>import</scope>
             </dependency>
             <!--企业版数据处理方案-->
             <dependency>

@@ -40,15 +40,15 @@ public interface Constants {
      */
     Integer DEFAULT_OPT = 1;
 
-	/**
-	 * 在字符串中的空json对象
-	 */
-	String EMPTY_JSON_IN_STRING = "\\{\\}";
+    /**
+     * 在字符串中的空json对象
+     */
+    String EMPTY_JSON_IN_STRING = "\\{\\}";
 
-	/**
-	 * 字符串占位符
-	 */
-	String STR_PLACEHOLDER = "%s";
+    /**
+     * 字符串占位符
+     */
+    String STR_PLACEHOLDER = "%s";
     /**
      * 空对象
      */
@@ -60,15 +60,15 @@ public interface Constants {
      */
     String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-	/**
-	 * 只有日期的时间格式
-	 */
+    /**
+     * 只有日期的时间格式
+     */
     String ONLY_DATE_FORMAT = "yyyy-MM-dd";
 
-	/**
-	 * 默认框架组件ORDER值
-	 */
-	int DEFAULT_ORDER = 100;
+    /**
+     * 默认框架组件ORDER值
+     */
+    int DEFAULT_ORDER = 100;
     /**
      * 默认排序升序
      */
@@ -86,6 +86,10 @@ public interface Constants {
          * 条件 and连接
          */
         AND,
+        /**
+         * 空嵌套
+         */
+        NESTED,
         /**
          * 条件 or连接
          */

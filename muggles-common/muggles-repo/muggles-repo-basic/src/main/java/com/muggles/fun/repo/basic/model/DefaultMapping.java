@@ -1,7 +1,10 @@
 package com.muggles.fun.repo.basic.model;
 
+import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.StrUtil;
 import com.muggles.fun.basic.MFunction;
 import com.muggles.fun.repo.basic.IFieldMapping;
+import com.muggles.fun.tools.core.bean.LambdaFunction;
 import lombok.SneakyThrows;
 
 import java.lang.invoke.SerializedLambda;
@@ -19,25 +22,7 @@ public class DefaultMapping implements IFieldMapping {
      */
     @SneakyThrows
     @Override
-    public <T> String fieldMappingColum(MFunction<T, ?> attribute) {
-        Method method = attribute.getClass().getDeclaredMethod("writeReplace");
-        method.setAccessible(true);
-        SerializedLambda lambda = (SerializedLambda) method.invoke(attribute);
-        String methodName = lambda.getImplMethodName(); // 比如 "getName"
-        return methodNameToProperty(methodName);
-    }
-
-    /**
-     * 获取属性名
-     * @param methodName    方法名称
-     * @return  String
-     */
-    private String methodNameToProperty(String methodName) {
-        if (methodName.startsWith("is")) {
-            return methodName.substring(2);
-        } else if (methodName.startsWith("get") || methodName.startsWith("set")) {
-            return methodName.substring(3);
-        }
-        return methodName;
+    public <T> String fieldMappingColum(LambdaFunction<T, ?> attribute) {
+        return StrUtil.toUnderlineCase(LambdaUtil.getFieldName(attribute));
     }
 }

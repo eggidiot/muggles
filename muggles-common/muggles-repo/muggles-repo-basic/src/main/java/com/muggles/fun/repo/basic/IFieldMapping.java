@@ -1,6 +1,6 @@
 package com.muggles.fun.repo.basic;
 
-import com.muggles.fun.basic.MFunction;
+import com.muggles.fun.tools.core.bean.LambdaFunction;
 
 /**
  * 属性映射字段接口
@@ -11,5 +11,5 @@ public interface IFieldMapping {
      * @param attribute 属性get方法
      * @return  String
      */
-    <T>String fieldMappingColum(MFunction<T, ?> attribute);
+    <T>String fieldMappingColum(LambdaFunction<T, ?> attribute);
 }

@@ -1,16 +1,14 @@
 package com.muggles.fun.basic.model;
 
 import com.muggles.fun.basic.Constants;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
+import static com.muggles.fun.basic.Constants.RelationType;
 
 /**
  * 自定义查询参数，支持简单的模糊查询和等值查询
@@ -19,58 +17,53 @@ import java.util.Map;
  *
  * @param <T>
  */
+@Getter
 @NoArgsConstructor
-public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
+public abstract class MuggleParam<T, C extends MuggleParam<T, C>> {
     /**
      * 连接符
      */
-    @Getter
-    protected Constants.RelationType relationType = Constants.RelationType.AND;
+    protected RelationType type = RelationType.AND;
     /**
      * 每页显示条数，默认 10
      */
-    @Getter
     protected long size = 10;
     /**
      * 当前页
      */
-    @Getter
     protected long current = 1;
     /**
      * 查询条件
      */
-    @Getter
     protected Map<String, Object> params = new HashMap<>();
     /**
      * 查询字段，
      */
-    @Getter
     protected List<String> fields = new ArrayList<>();
     /**
      * 排除字段
      */
-    @Getter
     protected List<String> excludes = new ArrayList<>();
     /**
      * 排序字段
      */
-    @Getter
     protected List<OrderBy> orderBys = new ArrayList<>();
     /**
      * groupBy字段
      */
-    @Getter
     protected List<String> groupBys = new ArrayList<>();
     /**
-     * 查询子条件集合
+     * 查询不同条件关联关系的集合
      */
-    @Getter
     protected List<C> relations = new ArrayList<>();
     /**
      * 查询对象字段限定
      */
-    @Getter
-    protected T selectors;
+    protected T selector;
+    /**
+     * 下一个条件用and或者or连接，true表示用and连接，false表示用or连接
+     */
+    protected AtomicBoolean nextRelation = new AtomicBoolean();
 
     /**
      * 排序字段
@@ -98,14 +91,17 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
             return getAsc() > Constants.DESC;
         }
     }
+
     /**
      * 设置连接符
-     * @param relationType 连接符
+     *
+     * @param relationType 链接符枚举
      */
-    public C setRelationType(Constants.RelationType relationType) {
-        this.relationType = relationType;
+    public C setType(RelationType relationType) {
+        this.type = relationType;
         return (C) this;
     }
+
     /**
      * 设置每页显示条数，默认 10
      */
@@ -113,6 +109,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.size = size;
         return (C) this;
     }
+
     /**
      * 设置当前页
      */
@@ -120,6 +117,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.current = current;
         return (C) this;
     }
+
     /**
      * 查询条件
      */
@@ -127,6 +125,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.params = params;
         return (C) this;
     }
+
     /**
      * 查询字段，
      */
@@ -134,6 +133,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.fields = fields;
         return (C) this;
     }
+
     /**
      * 排除字段
      */
@@ -141,6 +141,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.excludes = excludes;
         return (C) this;
     }
+
     /**
      * 排序字段
      */
@@ -148,6 +149,7 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.orderBys = orderBys;
         return (C) this;
     }
+
     /**
      * groupBy字段
      */
@@ -155,18 +157,170 @@ public abstract class MuggleParam<T,C extends MuggleParam<T,C>> {
         this.groupBys = groupBys;
         return (C) this;
     }
+
     /**
-     * 查询子条件集合
+     * 查询不同条件关联关系的集合
      */
     public C setRelations(List<C> relations) {
         this.relations = relations;
         return (C) this;
     }
+
     /**
      * 查询对象字段限定
      */
-    public C setSelectors(T selectors) {
-        this.selectors = selectors;
+    public C setSelector(T selector) {
+        this.selector = selector;
         return (C) this;
+    }
+
+    /**
+     * 指定查询字段
+     *
+     * @return C
+     */
+    public C select(String... fields) {
+        this.fields.addAll(Arrays.asList(fields));
+        return (C) this;
+    }
+
+    /**
+     * 排除查询字段
+     *
+     * @param fields 字段名边长数组
+     * @return C
+     */
+    public C excludes(String... fields) {
+        this.excludes.addAll(Arrays.asList(fields));
+        return (C) this;
+    }
+
+    /**
+     * 修改or连接符
+     *
+     * @return C
+     */
+    public C or() {
+        nextRelation.set(false);
+        return (C) this;
+    }
+
+    /**
+     * 修改and连接符
+     *
+     * @return C
+     */
+    public C and() {
+        nextRelation.set(true);
+        return (C) this;
+    }
+
+    /**
+     * 修改or连接符
+     *
+     * @return C
+     */
+    @SneakyThrows
+    public C relation(Consumer<C> consumer, RelationType type) {
+        C c = (C) this.getClass().newInstance();
+        consumer.accept(c.setType(type));
+        relations.add(c);
+        return (C) this;
+    }
+
+    /**
+     * or方式连接內联一组条件
+     *
+     * @param consumer 执行函数
+     * @return C
+     */
+    public C or(Consumer<C> consumer) {
+        return relation(consumer, RelationType.OR);
+    }
+
+    /**
+     * and方式连接內联一组条件
+     *
+     * @param consumer 执行函数
+     * @return C
+     */
+    public C and(Consumer<C> consumer) {
+        return relation(consumer, RelationType.AND);
+    }
+
+    /**
+     * 添加排序字段
+     *
+     * @param orders 排序字段
+     * @return C
+     */
+    public C orderBy(OrderBy... orders) {
+        for (OrderBy ob: orders) {
+            if (ob != null) {
+                orderBys.add(ob);
+            }
+        }
+        return (C) this;
+    }
+
+    /**
+     * 添加排序字段
+     *
+     * @param fields 排序字段
+     * @return C
+     */
+    public C orderBy(String... fields) {
+        Arrays.asList(fields).forEach(f -> orderBy(f, Constants.ASC));
+        return (C) this;
+    }
+
+    /**
+     * 添加排序字段
+     *
+     * @param fields 排序字段
+     * @return C
+     */
+    public C orderByDesc(String... fields) {
+        Arrays.asList(fields).forEach(f -> orderBy(f, Constants.DESC));
+        return (C) this;
+    }
+
+    /**
+     * 添加排序字段
+     *
+     * @param field 字段
+     * @param asc   排序方式
+     * @return C
+     */
+    public C orderBy(String field, int asc) {
+        OrderBy ob = new OrderBy(field, asc);
+        orderBys.add(ob);
+        return (C) this;
+    }
+
+    /**
+     * 添加排序字段
+     *
+     * @param groups 分组字段
+     * @return C
+     */
+    public C groupBy(String... groups) {
+        for (String s: groups) {
+            if (s != null && !s.trim().isEmpty()) {
+                groupBys.add(s);
+            }
+        }
+        return (C) this;
+    }
+
+    /**
+     * 根据值获取下一个连接符
+     * @return  RelationType
+     */
+    protected RelationType type(){
+        if (nextRelation.getAndSet(true)){
+            return RelationType.AND;
+        }
+        return RelationType.OR;
     }
 }
