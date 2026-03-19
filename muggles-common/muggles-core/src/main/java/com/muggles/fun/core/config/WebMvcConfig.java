@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 
 import com.muggles.fun.core.handler.MuggleParamHandler;
 import com.muggles.fun.core.handler.MuggleValueHandler;
+import com.muggles.fun.core.handler.view.AutoUserResolverHandler;
+import com.muggles.fun.core.handler.view.ViewModelReturnHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -52,13 +54,13 @@ public class WebMvcConfig implements InitializingBean {
 	public void afterPropertiesSet() {
 		//1.设置返回值处理器
 		List<HandlerMethodReturnValueHandler> handlers = CollUtil.newArrayList(requestMappingHandlerAdapter.getReturnValueHandlers());
-		handlers.add(0, new MuggleValueHandler().setJsonMapper(jsonMapper));
+		handlers.addFirst(new ViewModelReturnHandler().setJsonMapper(jsonMapper));
 		requestMappingHandlerAdapter.setReturnValueHandlers(handlers);
 		//2.设置参数处理器
 		List<HandlerMethodArgumentResolver> resolvers = CollUtil.newArrayList(requestMappingHandlerAdapter.getArgumentResolvers());
-		MuggleParamHandler resolver = new MuggleParamHandler();
+		AutoUserResolverHandler resolver = new AutoUserResolverHandler();
 		resolver.setJsonMapper(jsonMapper);
-		resolvers.add(0, resolver);
+		resolvers.addFirst(resolver);
 		requestMappingHandlerAdapter.setArgumentResolvers(resolvers);
 	}
 }

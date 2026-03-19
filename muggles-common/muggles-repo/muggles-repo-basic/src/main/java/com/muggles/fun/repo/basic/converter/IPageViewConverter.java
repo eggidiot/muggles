@@ -17,7 +17,7 @@ public interface IPageViewConverter<T, R> extends IViewConverter<T, R> {
      * @return IFlinePage<R>
      */
     default IMugglePage<R> applyPage(IMugglePage<T> page) {
-        MugglePage<R> p = new MugglePage<R>().setPages(page.getPages()).setSize(page.getSize());
+        MugglePage<R> p = new MugglePage<R>().setCurrent(page.getCurrent()).setSize(page.getSize());
         p.setTotal(page.getTotal()).setPages(page.getPages());
         p.setRecords(applyList(page.getRecords()));
         return p;
