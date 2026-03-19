@@ -2,6 +2,7 @@ package com.muggles.fun.repo.basic.model;
 
 import com.muggles.fun.basic.MFunction;
 import com.muggles.fun.repo.basic.IFieldMapping;
+import lombok.SneakyThrows;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
@@ -11,22 +12,19 @@ import java.lang.reflect.Method;
  */
 public class DefaultMapping implements IFieldMapping {
     /**
-     * 属性映射字段
+     * 属性映射字段，默认直接返回属性名称
      *
      * @param attribute 属性get方法
      * @return String
      */
+    @SneakyThrows
     @Override
     public <T> String fieldMappingColum(MFunction<T, ?> attribute) {
-        try {
-            Method method = attribute.getClass().getDeclaredMethod("writeReplace");
-            method.setAccessible(true);
-            SerializedLambda lambda = (SerializedLambda) method.invoke(attribute);
-            String methodName = lambda.getImplMethodName(); // 比如 "getName"
-            return methodNameToProperty(methodName);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to extract property name", e);
-        }
+        Method method = attribute.getClass().getDeclaredMethod("writeReplace");
+        method.setAccessible(true);
+        SerializedLambda lambda = (SerializedLambda) method.invoke(attribute);
+        String methodName = lambda.getImplMethodName(); // 比如 "getName"
+        return methodNameToProperty(methodName);
     }
 
     /**

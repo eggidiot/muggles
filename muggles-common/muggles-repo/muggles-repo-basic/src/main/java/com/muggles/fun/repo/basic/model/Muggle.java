@@ -6,8 +6,10 @@ import com.muggles.fun.repo.basic.IFieldMapping;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,9 +26,26 @@ public class Muggle<T> extends MuggleParam<T,Muggle<T>> {
      * 是否执行count标记
      */
     protected Boolean searchCount = true;
-
+    /**
+     * 属性映射字段工具
+     */
+    private IFieldMapping mapping;
+    /**
+     * 内置属性映射字段工具
+     */
     @Setter
-    static Class<? extends IFieldMapping> mappingClazz =
+    static Class<? extends IFieldMapping> mappingClazz = DefaultMapping.class;
+
+    /**
+     * 无参构造方法
+     */
+    @SneakyThrows
+    public Muggle() {
+        // 获取无参构造器
+        Constructor<? extends IFieldMapping> constructor = mappingClazz.getDeclaredConstructor();
+        // 创建实例
+        mapping = constructor.newInstance();
+    }
 
     /**
      * 生成MP的分页组件，用于查询，只传递页数和单页大小
@@ -55,7 +74,7 @@ public class Muggle<T> extends MuggleParam<T,Muggle<T>> {
      */
     public Muggle<T> fields(MFunction<T, ?>... fields) {
         List<MFunction<T, ?>> list = Arrays.asList(fields);
-        this.fields.addAll(list.stream().map(this::columnsToString).collect(Collectors.toList()));
+        this.fields.addAll(list.stream().map(this::columnsToString).toList());
         return this;
     }
 
@@ -95,8 +114,8 @@ public class Muggle<T> extends MuggleParam<T,Muggle<T>> {
      * @param attribute 字段属性名称
      * @return String
      */
-    protected Muggle<T> columnsToString(MFunction<T, ?> attribute) {
-        return wrapper.columnsToString(attribute);
+    protected String columnsToString(MFunction<T, ?> attribute) {
+        return mapping.fieldMappingColum(attribute);
     }
 
 
