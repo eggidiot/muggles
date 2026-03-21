@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.muggles.fun</groupId>
+        <artifactId>muggles</artifactId>
+        <version>0.9.0</version>
+    </parent>
+
+    <artifactId>muggles-starter</artifactId>
+    <packaging>pom</packaging>
+    <description>麻瓜项目依赖starter，可填充默认配置</description>
+    <modules>
+        <module>muggles-starter-boot</module>
+        <module>muggles-starter-parent</module>
+        <module>muggles-starter-tool</module>
+    </modules>
+    <name>muggles-starter</name>
+
+</project>

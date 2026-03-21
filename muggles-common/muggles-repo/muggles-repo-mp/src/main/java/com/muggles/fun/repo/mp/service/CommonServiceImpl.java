@@ -36,7 +36,6 @@ import java.util.Map;
  */
 public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends MuggleParam<T, C>> extends ServiceImpl<M, T> implements ICommonService<T, C> {
 
-
     /**
      * 根据ID更新字为null
      *

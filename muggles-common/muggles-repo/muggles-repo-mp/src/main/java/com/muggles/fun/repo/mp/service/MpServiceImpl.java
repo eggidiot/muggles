@@ -1,11 +1,13 @@
 package com.muggles.fun.repo.mp.service;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.muggles.fun.basic.model.IMugglePage;
 import com.muggles.fun.repo.basic.model.Muggle;
 import com.muggles.fun.repo.basic.model.MugglePage;
 import com.muggles.fun.repo.basic.service.IMuggleService;
 import com.muggles.fun.repo.mp.criteria.WrapperTranslator;
+import com.muggles.fun.repo.mp.join.JoinSqlParser;
 import com.muggles.fun.repo.mp.mapper.CommonMapper;
 
 import java.util.List;
@@ -19,6 +21,11 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      */
     @Override
     public T one(Muggle<T> param) {
+        if (CollUtil.isNotEmpty(param.getJoins())) {
+            JoinSqlParser.buildJoinParam(param);
+            List<T> results = mapper().queryJoinList(param);
+            return CollUtil.isNotEmpty(results) ? results.getFirst() : null;
+        }
         return getOne(WrapperTranslator.translate(param));
     }
 
@@ -26,10 +33,14 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      * 根据查询条件查询实体集合
      *
      * @param param 查询条件
-     * @return T
+     * @return List<T>
      */
     @Override
     public List<T> list(Muggle<T> param) {
+        if (CollUtil.isNotEmpty(param.getJoins())) {
+            JoinSqlParser.buildJoinParam(param);
+            return mapper().queryJoinList(param);
+        }
         return list(WrapperTranslator.translate(param));
     }
 
@@ -37,11 +48,17 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
      * 根据查询条件查询实体分页集合
      *
      * @param param 查询条件
-     * @return T
+     * @return IMugglePage<T>
      */
     @Override
     public IMugglePage<T> page(Muggle<T> param) {
-        Page<T> result = page(WrapperTranslator.toPage(param),WrapperTranslator.translate(param));
+        Page<T> result;
+        if (CollUtil.isNotEmpty(param.getJoins())) {
+            JoinSqlParser.buildJoinParam(param);
+            result = mapper().queryJoinPage(WrapperTranslator.toPage(param), param);
+        } else {
+            result = page(WrapperTranslator.toPage(param), WrapperTranslator.translate(param));
+        }
         MugglePage<T> page = new MugglePage<>();
         page.setCurrent(result.getCurrent())
                 .setSize(result.getSize()).setTotal(result.getTotal()).setPages(result.getPages()).setRecords(result.getRecords());

@@ -105,6 +105,32 @@ public class JoinSqlParser {
 	}
 
 	/**
+	 * 构建包含联表的子查询SQL
+	 * <p>
+	 * 用于子查询Muggle包含join时，组装完整的子查询SQL语句。
+	 * 调用前需先通过 {@link #buildJoinParam(Muggle)} 填充联表参数。
+	 *
+	 * @param muggle 已通过buildJoinParam处理过的查询参数
+	 * @return 完整的子查询SQL
+	 */
+	public <T> String buildJoinSubQuerySql(Muggle<T> muggle) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ");
+		sb.append(String.join(",", muggle.getSelectColumns()));
+		sb.append(" from ");
+		sb.append(muggle.getJoinSql());
+		sb.append(" where 1=1 ");
+		for (String condition : muggle.getWhereConditions()) {
+			sb.append(condition);
+		}
+		if (CollUtil.isNotEmpty(muggle.getGroupByColumns())) {
+			sb.append(" group by ");
+			sb.append(String.join(",", muggle.getGroupByColumns()));
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * 构建联表SQL
 	 *
 	 * @param muggle 查询参数对象
@@ -116,8 +142,19 @@ public class JoinSqlParser {
 		TableInfo masterInfo = TableInfoHelper.getTableInfo(muggle.getEntityClass());
 		Assert.notNull(masterInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
 		sb.append(masterInfo.getTableName()).append(BLANK).append(muggle.getAlias());
-		// 联表
-		for (Muggle<?> join : muggle.getJoins()) {
+		// 递归展开所有联表
+		appendJoinClauses(muggle.getJoins(), sb);
+		return sb.toString();
+	}
+
+	/**
+	 * 递归拼接联表SQL子句
+	 *
+	 * @param joins 联表列表
+	 * @param sb    SQL构建器
+	 */
+	private void appendJoinClauses(List<Muggle<?>> joins, StringBuilder sb) {
+		for (Muggle<?> join : joins) {
 			TableInfo joinTableInfo = TableInfoHelper.getTableInfo(join.getEntityClass());
 			Assert.notNull(joinTableInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
 			sb.append(BLANK);
@@ -132,8 +169,11 @@ public class JoinSqlParser {
 			sb.append(String.join(AND, onConditions));
 			// 联表逻辑删除条件
 			sb.append(buildLogicDeleteCondition(join.getEntityClass(), join.getAlias()));
+			// 递归处理子联表
+			if (CollUtil.isNotEmpty(join.getJoins())) {
+				appendJoinClauses(join.getJoins(), sb);
+			}
 		}
-		return sb.toString();
 	}
 
 	/**
@@ -157,7 +197,7 @@ public class JoinSqlParser {
 	 * @param alias 表别名
 	 * @return 逻辑删除条件SQL
 	 */
-	private static String buildLogicDeleteCondition(Class<?> clazz, String alias) {
+	private String buildLogicDeleteCondition(Class<?> clazz, String alias) {
 		StringBuilder sb = new StringBuilder();
 		TableInfo tableInfo = TableInfoHelper.getTableInfo(clazz);
 		Assert.notNull(tableInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
@@ -178,7 +218,7 @@ public class JoinSqlParser {
 	 * @param alias 表别名
 	 * @return 逻辑删除条件SQL
 	 */
-	private static String buildLogicDeleteConditionOnWhere(Class<?> clazz, String alias) {
+	private String buildLogicDeleteConditionOnWhere(Class<?> clazz, String alias) {
 		StringBuilder sb = new StringBuilder();
 		TableInfo tableInfo = TableInfoHelper.getTableInfo(clazz);
 		Assert.notNull(tableInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
@@ -200,7 +240,7 @@ public class JoinSqlParser {
 	 * @param columns 选择的列
 	 * @return 查询字段列表
 	 */
-	private static List<String> buildSelectColumns(List<String> columns) {
+	private List<String> buildSelectColumns(List<String> columns) {
 		return CollUtil.isEmpty(columns) ? CollUtil.newArrayList(SELECT_ALL) : columns;
 	}
 
@@ -217,12 +257,26 @@ public class JoinSqlParser {
 		if (StrUtil.isNotBlank(masterCondition)) {
 			whereConditions.add(masterCondition);
 		}
-		// 联表条件
-		for (Muggle<?> join : muggle.getJoins()) {
+		// 递归收集所有联表的WHERE条件
+		collectJoinWhereConditions(muggle.getJoins(), whereConditions);
+	}
+
+	/**
+	 * 递归收集联表的WHERE查询条件
+	 *
+	 * @param joins           联表列表
+	 * @param whereConditions WHERE条件列表
+	 */
+	private void collectJoinWhereConditions(List<Muggle<?>> joins, List<String> whereConditions) {
+		for (Muggle<?> join : joins) {
 			QueryWrapper<?> joinWrapper = WrapperTranslator.translate(join);
 			String joinCondition = generateWhereCondition(joinWrapper, join.getAlias(), join.getEntityClass());
 			if (StrUtil.isNotBlank(joinCondition)) {
 				whereConditions.add(joinCondition);
+			}
+			// 递归处理子联表
+			if (CollUtil.isNotEmpty(join.getJoins())) {
+				collectJoinWhereConditions(join.getJoins(), whereConditions);
 			}
 		}
 	}
@@ -234,8 +288,7 @@ public class JoinSqlParser {
 	 * @param alias        表别名
 	 * @return 拼接后的条件SQL
 	 */
-	private static String generateWhereCondition(QueryWrapper<?> queryWrapper, String alias,Class<?> clazz) {
-
+	private String generateWhereCondition(QueryWrapper<?> queryWrapper, String alias,Class<?> clazz) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildLogicDeleteConditionOnWhere(clazz, alias));
 		// 只获取WHERE条件部分，排除GROUP BY和ORDER BY
@@ -249,7 +302,6 @@ public class JoinSqlParser {
 		String whereCondition = fillSqlParam(sb.toString(), queryWrapper.getParamNameValuePairs());
 		// 保护子查询sql
 		whereCondition = protectNestedSubQueries(whereCondition, subQueries);
-
 		// 使用JSQLParser进行SQL解析和字段别名替换
 		whereCondition = replaceColumnAliasesWithJSQLParser(whereCondition, alias);
 		// 恢复子查询
@@ -263,7 +315,7 @@ public class JoinSqlParser {
 	 * @param alias 表的别名
 	 * @return 替换别名后的SQL
 	 */
-	private static String replaceColumnAliasesWithJSQLParser(String sql, String alias) {
+	private String replaceColumnAliasesWithJSQLParser(String sql, String alias) {
 		try {
 			String trimmedSql = sql.trim();
 			// 将WHERE条件包装成完整的SELECT语句，以便JSQLParser解析
@@ -302,7 +354,7 @@ public class JoinSqlParser {
 	/**
 	 * 恢复子查询部分，替换占位符
 	 */
-	private static String restoreSubQueries(String sql, List<String> subQueries) {
+	private String restoreSubQueries(String sql, List<String> subQueries) {
 		for (int i = 0; i < subQueries.size(); i++) {
 			sql = sql.replace(subqueryPlaceholder + i, "(" + subQueries.get(i) + ")");
 		}
@@ -312,7 +364,7 @@ public class JoinSqlParser {
 	/**
 	 * 保护子查询部分，避免对其进行别名替换
 	 */
-	private static String protectNestedSubQueries(String sql, List<String> subQueries) {
+	private String protectNestedSubQueries(String sql, List<String> subQueries) {
 		Deque<Integer> stack = new ArrayDeque<>();
 		StringBuilder sb = new StringBuilder(sql);
 		int start = -1;

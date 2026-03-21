@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.toolkit.sql.StringEscape;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.muggles.fun.repo.basic.criteria.QueryCriteria;
 import com.muggles.fun.repo.basic.model.Muggle;
+import com.muggles.fun.repo.mp.join.JoinSqlParser;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
@@ -62,6 +63,11 @@ public class BaseSubQuery {
 	@SneakyThrows
 	public <R> String getSubQuerySql(QueryCriteria criteria) {
 		Muggle<R> param = (Muggle<R>) criteria.getValue();
+		// 如果子查询包含联表，使用JoinSqlParser递归构建
+		if (CollUtil.isNotEmpty(param.getJoins())) {
+			JoinSqlParser.buildJoinParam(param);
+			return JoinSqlParser.buildJoinSubQuerySql(param);
+		}
 		QueryWrapper<R> queryWrapper = WrapperTranslator.translate(param);
 		// 把子查询queryWrapper转换成sql
 		String sql = buildSubQuerySql(queryWrapper, param.getEntityClass(), CollUtil.isNotEmpty(param.getCriterias()));

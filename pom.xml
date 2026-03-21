@@ -19,6 +19,7 @@
         <module>muggles-dependencies</module>
         <!--通用功能模块-->
         <module>muggles-common</module>
+        <module>muggles-starter</module>
     </modules>
 
 
