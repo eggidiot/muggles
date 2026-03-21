@@ -87,6 +87,22 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     @Setter
     protected static String func = RepoConstants.FUNC_TEMPLATE;
     /**
+     * 联表SQL
+     */
+    private String joinSql;
+    /**
+     * 联表查询字段列表
+     */
+    private List<String> selectColumns = new ArrayList<>();
+    /**
+     * 联表WHERE查询条件列表
+     */
+    private List<String> whereConditions = new ArrayList<>();
+    /**
+     * 联表分组字段列表
+     */
+    private List<String> groupByColumns = new ArrayList<>();
+    /**
      * 指定查询字段
      *
      * @param fields 字段名边长数组

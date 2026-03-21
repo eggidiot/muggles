@@ -224,7 +224,7 @@ public abstract class CommonServiceImpl<M extends CommonMapper<T>, T, C extends 
         if (CollUtil.isEmpty(ids)) {
             return false;
         }
-        return removeBatchByIds(ids, 100);
+        return removeBatchByIds(ids);
     }
 
     /**

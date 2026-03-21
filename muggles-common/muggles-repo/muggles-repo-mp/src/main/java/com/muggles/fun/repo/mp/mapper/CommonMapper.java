@@ -3,8 +3,11 @@ package com.muggles.fun.repo.mp.mapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.muggles.fun.repo.basic.model.Muggle;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -70,5 +73,33 @@ public interface CommonMapper<T> extends BaseMapper<T> {
 			+ " ${ew.customSqlSegment}"
 			+ "</script>")
 	int recovery(@Param("table")String table,@Param("field") String field, @Param(Constants.WRAPPER) QueryWrapper<T> wrapper);
+
+	/**
+	 * 联表查询列表
+	 * @param param	查询参数
+	 * @return	List<R>
+	 * @param <R>	泛型类型
+	 */
+	@Select("<script>" + "SELECT " + "<foreach collection='joiner.selectColumns' item='item' separator=','>"
+			+ "${item} " + "</foreach>" + "FROM ${joiner.joinSql}" + " WHERE 1=1 "
+			+ "<foreach collection='joiner.whereConditions' item='condition' separator=''>" + "${condition}" + "</foreach>"
+			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
+			+ "</script>")
+	<R>List<R> queryJoinList(@Param("joiner") Muggle<R> param);
+
+
+	/**
+	 * 联表查询分页
+	 *
+	 * @param page		分页对象
+	 * @param param		分页参数
+	 * @param <R>	泛型类型
+	 */
+	@Select("<script>" + "SELECT " + "<foreach collection='joiner.selectColumns' item='item' separator=','>"
+			+ "${item} " + "</foreach>" + "FROM ${joiner.joinSql}" + " WHERE 1=1 "
+			+ "<foreach collection='joiner.whereConditions' item='condition' separator=''>" + "${condition}" + "</foreach>"
+			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
+			+ "</script>")
+	<R>Page<R> queryJoinPage(Page<R> page, @Param("joiner") Muggle<T> param);
 }
 
