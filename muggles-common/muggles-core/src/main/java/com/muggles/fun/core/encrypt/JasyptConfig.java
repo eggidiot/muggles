@@ -6,7 +6,6 @@ import org.jasypt.encryption.StringEncryptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * 加密配置
@@ -14,7 +13,6 @@ import org.springframework.context.annotation.PropertySource;
 @EnableEncryptableProperties
 @Configuration
 @Data
-@PropertySource("classpath:default_encrypt.properties")
 public class JasyptConfig {
 
     /**
