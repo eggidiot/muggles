@@ -12,6 +12,13 @@
     <artifactId>muggles-repo-mp</artifactId>
 
     <dependencies>
+        <!--麻瓜核心模块-->
+        <dependency>
+            <groupId>com.muggles.fun</groupId>
+            <artifactId>muggles-core</artifactId>
+            <version>${muggles.version}</version>
+        </dependency>
+
         <!--持久层基础模块，定义基本数据结构和接口-->
         <dependency>
             <groupId>com.muggles.fun</groupId>

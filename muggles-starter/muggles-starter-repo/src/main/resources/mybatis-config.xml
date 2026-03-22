@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!--&lt;!&ndash; \u6253\u5370\u67E5\u8BE2\u8BED\u53E5 &ndash;&gt;-->
+        <setting name="logImpl" value="SLF4J"/>
+        <setting name="localCacheScope" value="SESSION"/>
+        <!-- 是否开启自动驼峰命名规则（camel case）映射，即从经典数据库列名 A_COLUMN 到经典 Java 属性名 aColumn 的类似映射。  默认false -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存。 -->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+
+
+    <!-- mapper\u5DF2\u7ECF\u5728spring-mybatis.xml\u4E2D\u7684sqlSessionFactory\u914D\u7F6E\uFF0C\u8FD9\u91CC\u4E0D\u518D\u9700\u8981\u914D\u7F6E -->
+    <!--     <mappers> -->
+    <!--         <mapper resource="com/a/b/c/api/BusinessInfoDaoMapper.xml" /> -->
+    <!--     </mappers> -->
+</configuration>

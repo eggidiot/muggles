@@ -31,5 +31,12 @@
             <artifactId>muggles-starter-tool</artifactId>
             <version>${muggles.version}</version>
         </dependency>
+
+        <!--工具包依赖-->
+        <dependency>
+            <groupId>com.muggles.fun</groupId>
+            <artifactId>muggles-starter-repo</artifactId>
+            <version>${muggles.version}</version>
+        </dependency>
     </dependencies>
 </project>

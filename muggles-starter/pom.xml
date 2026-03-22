@@ -14,6 +14,7 @@
         <module>muggles-starter-boot</module>
         <module>muggles-starter-parent</module>
         <module>muggles-starter-tool</module>
+        <module>muggles-starter-repo</module>
     </modules>
     <name>muggles-starter</name>
 

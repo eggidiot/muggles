@@ -2,16 +2,11 @@ package com.muggles.fun.repo.mp.config;
 
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.github.yitter.idgen.YitIdHelper;
-import lombok.Data;
-import lombok.experimental.Accessors;
 
 /**
- * 自定义ID生成策略
+ * 自定义ID生成器
  */
-@Data
-@Accessors(chain = true)
-public class SnowIdGenerator implements IdentifierGenerator {
-
+public class MpIdGenerator implements IdentifierGenerator {
     /**
      * 生成Id
      *
@@ -19,8 +14,7 @@ public class SnowIdGenerator implements IdentifierGenerator {
      * @return id
      */
     @Override
-    public Long nextId(Object entity) {
+    public Number nextId(Object entity) {
         return YitIdHelper.nextId();
     }
-
 }

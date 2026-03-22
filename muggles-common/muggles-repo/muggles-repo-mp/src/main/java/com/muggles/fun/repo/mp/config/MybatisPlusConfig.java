@@ -2,6 +2,8 @@ package com.muggles.fun.repo.mp.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
+import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 /**
+ * mp默认配置
  * @author y
  * @date 2019/10/29
  */
@@ -30,6 +33,26 @@ public class MybatisPlusConfig implements InitializingBean {
     @Value("${worker-id:#{1}}")
     private Short workerId;
 
+    /**
+     * 默认自定义ID生成器
+     * @return  IdentifierGenerator
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public IdentifierGenerator idGenerator() {
+        return new MpIdGenerator();
+    }
+
+    /**
+     * 设置字段默认提交字段插入
+     *
+     * @return MetaObjectHandler
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public MetaObjectHandler metaObjectHandler() {
+        return new MpMetaObjHandler();
+    }
 
     /**
      * 分页插件

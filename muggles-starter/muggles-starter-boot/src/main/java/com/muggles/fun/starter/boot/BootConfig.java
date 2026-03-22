@@ -1,4 +1,4 @@
-package com.muggles.fun.boot.starter;
+package com.muggles.fun.starter.boot;
 
 import org.springframework.context.annotation.PropertySource;
 

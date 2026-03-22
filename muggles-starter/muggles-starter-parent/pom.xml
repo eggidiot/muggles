@@ -8,7 +8,7 @@
     </parent>
     <description>各类型依赖总集，包含持久层，工具类，缓存等</description>
     <artifactId>muggles-starter-parent</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <dependencyManagement>
         <dependencies>
@@ -36,6 +36,12 @@
             <dependency>
                 <groupId>com.muggles.fun</groupId>
                 <artifactId>muggles-starter-tool</artifactId>
+                <version>${muggles.version}</version>
+            </dependency>
+            <!--持久层依赖-->
+            <dependency>
+                <groupId>com.muggles.fun</groupId>
+                <artifactId>muggles-starter-repo</artifactId>
                 <version>${muggles.version}</version>
             </dependency>
         </dependencies>
