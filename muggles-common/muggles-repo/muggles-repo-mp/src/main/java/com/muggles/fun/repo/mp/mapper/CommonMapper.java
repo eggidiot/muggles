@@ -110,5 +110,19 @@ public interface CommonMapper<T> extends BaseMapper<T> {
 			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
 			+ "</script>")
 	Page<T> queryJoinPage(Page<T> page, @Param("joiner") Muggle<T> param);
+
+	/**
+	 * 联表查询分页（返回Map，用于复合对象查询）
+	 *
+	 * @param page		分页对象
+	 * @param param		分页参数
+	 * @return	Page<Map<String, Object>>
+	 */
+	@Select("<script>" + "SELECT " + "<foreach collection='joiner.selectColumns' item='item' separator=','>"
+			+ "${item} " + "</foreach>" + "FROM ${joiner.joinSql}" + " WHERE 1=1 "
+			+ "<foreach collection='joiner.whereConditions' item='condition' separator=''>" + "${condition}" + "</foreach>"
+			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
+			+ "</script>")
+	Page<Map<String, Object>> queryJoinPageMaps(Page<Map<String, Object>> page, @Param("joiner") Muggle<?> param);
 }
 

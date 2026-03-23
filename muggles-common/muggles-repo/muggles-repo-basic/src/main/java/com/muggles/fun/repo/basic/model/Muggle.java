@@ -40,6 +40,10 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     protected String alias = "t";
     /**
+     * 默认别名前缀
+     */
+    private static final String DEFAULT_ALIAS = "t";
+    /**
      * 作为连接被驱动表时，保存连接驱动表的别名，不用接受外部输入
      */
     @Accessors(fluent = true)
@@ -114,6 +118,21 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
         String[] array = ArrayUtil.toArray(list.stream().filter(Objects::nonNull).map(this::columnsToString).collect(Collectors.toList()),String.class);
         return select(array);
     }
+    /**
+     * 指定查询字段并设置别名，表别名会在联表解析时自动添加
+     * 适用于联表查询时同名字段需要区分的场景
+     * 示例：selectAs(SysRole::getName, "role_name") → 解析后 "www.name AS role_name"
+     *
+     * @param field 字段Lambda
+     * @param alias 别名
+     * @return Muggle<T>
+     */
+    public <R> Muggle<T> selectAs(LambdaFunction<R, ?> field, String alias) {
+        String col = columnsToString(field);
+        String prefix = StrUtil.isNotBlank(this.alias) ? this.alias + "." : "";
+        return select(prefix + col + " AS " + alias);
+    }
+
     /**
      * 添加排序字段
      *
@@ -398,6 +417,17 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     }
 
     /**
+     * 添加模糊取反参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public Muggle<T> notLike(LambdaFunction<T, ?> attribute, Object value) {
+        return notLike(columnsToString(attribute), value);
+    }
+
+    /**
      * 添加模糊参数
      *
      * @param attribute 参数名
@@ -409,6 +439,17 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     }
 
     /**
+     * 添加左模糊取反参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public Muggle<T> notLikeLeft(LambdaFunction<T, ?> attribute, Object value) {
+        return notLikeLeft(columnsToString(attribute), value);
+    }
+
+    /**
      * 添加左模糊参数
      *
      * @param attribute 参数名
@@ -417,6 +458,17 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      */
     public Muggle<T> likeLeft(LambdaFunction<T, ?> attribute, Object value) {
         return likeLeft(columnsToString(attribute), value);
+    }
+
+    /**
+     * 添加右模糊取反参数
+     *
+     * @param attribute 参数名
+     * @param value     参数值
+     * @return Muggle<T>
+     */
+    public Muggle<T> notLikeRight(LambdaFunction<T, ?> attribute, Object value) {
+        return notLikeRight(columnsToString(attribute), value);
     }
 
     /**
@@ -671,6 +723,19 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     }
     //=====================================================连表查询=================================================
     /**
+     * 统一添加联表，自动分配默认别名（若未手动设置）
+     * 别名规则：t1, t2, t3... 按加入顺序递增
+     *
+     * @param joinInfo 联表查询信息
+     * @param type     连表类型
+     */
+    private <R> void addJoin(Muggle<R> joinInfo, JoinType type) {
+        if (DEFAULT_ALIAS.equals(joinInfo.getAlias())) {
+            joinInfo.setAlias(DEFAULT_ALIAS + (this.joins.size() + 1));
+        }
+        this.joins.add(joinInfo.setJoin(type).outAlias(getAlias()));
+    }
+    /**
      * 设置连表查询条件
      * @param type      连表类型
      * @param joinInfo  连接信息
@@ -678,7 +743,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @param <R>   外连对象的泛型
      */
     public <R>Muggle<T> join(JoinType type,Muggle<R> joinInfo){
-        this.joins.add(joinInfo.setJoin(type).outAlias(getAlias()));
+        addJoin(joinInfo, type);
         return this;
     }
     /**
@@ -688,7 +753,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @param <R>   泛型类型
      */
     public <R>Muggle<T> join(Muggle<R> joinInfo){
-        this.joins.add(joinInfo.setJoin(JoinType.INNER).outAlias(getAlias()));
+        addJoin(joinInfo, JoinType.INNER);
         return this;
     }
     /**
@@ -698,7 +763,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @param <R>   泛型类型
      */
     public <R>Muggle<T> leftJoin(Muggle<R> joinInfo){
-        this.joins.add(joinInfo.setJoin(JoinType.LEFT).outAlias(getAlias()));
+        addJoin(joinInfo, JoinType.LEFT);
         return this;
     }
     /**
@@ -708,7 +773,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @param <R>   泛型类型
      */
     public <R>Muggle<T> rightJoin(Muggle<R> joinInfo){
-        this.joins.add(joinInfo.setJoin(JoinType.RIGHT).outAlias(getAlias()));
+        addJoin(joinInfo, JoinType.RIGHT);
         return this;
     }
     /**
@@ -718,7 +783,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @param <R>   泛型类型
      */
     public <R>Muggle<T> fullJoin(Muggle<R> joinInfo){
-        this.joins.add(joinInfo.setJoin(JoinType.FULL).outAlias(getAlias()));
+        addJoin(joinInfo, JoinType.FULL);
         return this;
     }
     /**
@@ -732,7 +797,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
     public <R> Muggle<T> join(JoinType type, Class<R> clazz, Consumer<Muggle<R>> consumer) {
         Muggle<R> joinInfo = new Muggle<R>().setEntityClass(clazz);
         consumer.accept(joinInfo);
-        this.joins.add(joinInfo.setJoin(type).outAlias(getAlias()));
+        addJoin(joinInfo, type);
         return this;
     }
     /**

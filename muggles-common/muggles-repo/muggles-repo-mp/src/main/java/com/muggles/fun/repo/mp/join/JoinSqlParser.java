@@ -96,7 +96,10 @@ public class JoinSqlParser {
 	 */
 	public <T> Muggle<T> buildJoinParam(Muggle<T> muggle) {
 		muggle.setJoinSql(buildJoinSql(muggle));
-		muggle.setSelectColumns(buildSelectColumns(muggle.getFields(), muggle.getExcludes(), muggle.getEntityClass(), muggle.getAlias()));
+		List<String> selectColumns = buildSelectColumns(muggle.getFields(), muggle.getExcludes(), muggle.getEntityClass(), muggle.getAlias());
+		// 递归收集联表的查询字段
+		collectJoinSelectColumns(muggle.getJoins(), selectColumns);
+		muggle.setSelectColumns(selectColumns);
 		muggle.setGroupByColumns(muggle.getGroupBys());
 		List<String> whereConditions = CollUtil.newArrayList();
 		buildWhereConditions(muggle, whereConditions);
@@ -271,6 +274,23 @@ public class JoinSqlParser {
 			return result;
 		}
 		return CollUtil.newArrayList(SELECT_ALL);
+	}
+
+	/**
+	 * 递归收集联表的查询字段（通过selectAs设置的字段）
+	 *
+	 * @param joins         联表列表
+	 * @param selectColumns 查询字段列表（结果累加到此列表）
+	 */
+	private void collectJoinSelectColumns(List<Muggle<?>> joins, List<String> selectColumns) {
+		for (Muggle<?> join : joins) {
+			if (CollUtil.isNotEmpty(join.getFields())) {
+				selectColumns.addAll(join.getFields());
+			}
+			if (CollUtil.isNotEmpty(join.getJoins())) {
+				collectJoinSelectColumns(join.getJoins(), selectColumns);
+			}
+		}
 	}
 
 	/**

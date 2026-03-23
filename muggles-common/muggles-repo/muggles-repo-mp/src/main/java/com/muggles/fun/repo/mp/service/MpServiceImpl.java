@@ -86,6 +86,60 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
     }
 
     /**
+     * 根据查询条件查询实体第一条记录,返回指定类型
+     *
+     * @param param 查询条件
+     * @param clazz 返回对象类型
+     * @param <R>   返回类型
+     * @return R
+     */
+    @Override
+    public <R> R one(Muggle<T> param, Class<R> clazz) {
+        JoinSqlParser.buildJoinParam(param);
+        List<Map<String, Object>> maps = mapper().queryJoinMaps(param);
+        return CollUtil.isNotEmpty(maps) ? BeanUtil.toBean(maps.getFirst(), clazz) : null;
+    }
+
+    /**
+     * 根据查询条件查询实体集合,返回指定类型
+     *
+     * @param param 查询条件
+     * @param clazz 返回对象类型
+     * @param <R>   返回类型
+     * @return List<R>
+     */
+    @Override
+    public <R> List<R> list(Muggle<T> param, Class<R> clazz) {
+        JoinSqlParser.buildJoinParam(param);
+        List<Map<String, Object>> maps = mapper().queryJoinMaps(param);
+        return maps.stream()
+                .map(m -> BeanUtil.toBean(m, clazz))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据查询条件查询实体分页集合,返回指定类型
+     *
+     * @param param 查询条件
+     * @param clazz 返回对象类型
+     * @param <R>   返回类型
+     * @return IMugglePage<R>
+     */
+    @Override
+    public <R> IMugglePage<R> page(Muggle<T> param, Class<R> clazz) {
+        JoinSqlParser.buildJoinParam(param);
+        Page<Map<String, Object>> mapPage = new Page<>(param.getCurrent(), param.getSize());
+        mapPage.setSearchCount(param.getSearchCount());
+        Page<Map<String, Object>> result = mapper().queryJoinPageMaps(mapPage, param);
+        MugglePage<R> page = new MugglePage<>();
+        page.setCurrent(result.getCurrent()).setTotal(result.getTotal()).setPages(result.getPages()).setSize(result.getSize()).setTotal(result.getTotal()).setPages(result.getPages())
+                .setRecords(result.getRecords().stream()
+                        .map(m -> BeanUtil.toBean(m, clazz))
+                        .collect(Collectors.toList()));
+        return page;
+    }
+
+    /**
      * 将指定条件的记录更新诚实体非null字段
      *
      * @param t     实体记录
