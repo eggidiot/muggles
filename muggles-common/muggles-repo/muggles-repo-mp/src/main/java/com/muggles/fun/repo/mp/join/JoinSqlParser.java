@@ -96,7 +96,7 @@ public class JoinSqlParser {
 	 */
 	public <T> Muggle<T> buildJoinParam(Muggle<T> muggle) {
 		muggle.setJoinSql(buildJoinSql(muggle));
-		muggle.setSelectColumns(buildSelectColumns(muggle.getFields()));
+		muggle.setSelectColumns(buildSelectColumns(muggle.getFields(), muggle.getExcludes(), muggle.getEntityClass(), muggle.getAlias()));
 		muggle.setGroupByColumns(muggle.getGroupBys());
 		List<String> whereConditions = CollUtil.newArrayList();
 		buildWhereConditions(muggle, whereConditions);
@@ -142,18 +142,19 @@ public class JoinSqlParser {
 		TableInfo masterInfo = TableInfoHelper.getTableInfo(muggle.getEntityClass());
 		Assert.notNull(masterInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
 		sb.append(masterInfo.getTableName()).append(BLANK).append(muggle.getAlias());
-		// 递归展开所有联表
-		appendJoinClauses(muggle.getJoins(), sb);
+		// 递归展开所有联表，传入主表别名作为第一层join的父别名
+		appendJoinClauses(muggle.getJoins(), muggle.getAlias(), sb);
 		return sb.toString();
 	}
 
 	/**
 	 * 递归拼接联表SQL子句
 	 *
-	 * @param joins 联表列表
-	 * @param sb    SQL构建器
+	 * @param joins       联表列表
+	 * @param parentAlias 父表（驱动表）的别名
+	 * @param sb          SQL构建器
 	 */
-	private void appendJoinClauses(List<Muggle<?>> joins, StringBuilder sb) {
+	private void appendJoinClauses(List<Muggle<?>> joins, String parentAlias, StringBuilder sb) {
 		for (Muggle<?> join : joins) {
 			TableInfo joinTableInfo = TableInfoHelper.getTableInfo(join.getEntityClass());
 			Assert.notNull(joinTableInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
@@ -161,17 +162,23 @@ public class JoinSqlParser {
 			sb.append(toJoinKeyword(join.getJoin())).append(BLANK);
 			sb.append(joinTableInfo.getTableName()).append(BLANK).append(join.getAlias());
 			sb.append(BLANK).append(ON).append(BLANK);
-			// ON条件
+			// ON条件：使用parentAlias作为驱动表别名，在SQL生成时确定，不依赖outAlias的设置时机
 			List<String> onConditions = new ArrayList<>();
 			for (OnCriteria onCriteria : join.getOn()) {
-				onConditions.add(onCriteria.getAttr1() + EQ + onCriteria.getAttr2());
+				String attr1 = parentAlias + POINT + onCriteria.getAttr1();
+				String attr2 = join.getAlias() + POINT + onCriteria.getAttr2();
+				onConditions.add(attr1 + EQ + attr2);
 			}
-			sb.append(String.join(AND, onConditions));
-			// 联表逻辑删除条件
-			sb.append(buildLogicDeleteCondition(join.getEntityClass(), join.getAlias()));
-			// 递归处理子联表
+			// 联表逻辑删除条件作为ON条件统一拼接
+			String logicDeleteOnCondition = buildLogicDeleteOnCondition(join.getEntityClass(), join.getAlias());
+			if (StrUtil.isNotBlank(logicDeleteOnCondition)) {
+				onConditions.add(logicDeleteOnCondition);
+			}
+			// ON条件为空时使用 1=1 兜底，避免生成 "ON WHERE" 语法错误
+			sb.append(CollUtil.isEmpty(onConditions) ? "1=1" : String.join(AND, onConditions));
+			// 递归处理子联表，子联表的父别名是当前联表的别名
 			if (CollUtil.isNotEmpty(join.getJoins())) {
-				appendJoinClauses(join.getJoins(), sb);
+				appendJoinClauses(join.getJoins(), join.getAlias(), sb);
 			}
 		}
 	}
@@ -192,23 +199,21 @@ public class JoinSqlParser {
 	}
 
 	/**
-	 * 构建逻辑删除条件
+	 * 构建逻辑删除条件（不带AND前缀，用于ON条件列表拼接）
 	 * @param clazz 实体类型
 	 * @param alias 表别名
-	 * @return 逻辑删除条件SQL
+	 * @return 逻辑删除条件SQL，如 "t2.delete_flag=0"
 	 */
-	private String buildLogicDeleteCondition(Class<?> clazz, String alias) {
-		StringBuilder sb = new StringBuilder();
+	private String buildLogicDeleteOnCondition(Class<?> clazz, String alias) {
 		TableInfo tableInfo = TableInfoHelper.getTableInfo(clazz);
 		Assert.notNull(tableInfo, () -> new MugglesBizException("未找到表信息，请检查实体类是否使用@TableName注解"));
 
 		TableFieldInfo logicDeleteFieldInfo = tableInfo.getLogicDeleteFieldInfo();
 		if (logicDeleteFieldInfo != null) {
-			sb.append(AND).append(alias).append(POINT);
-			sb.append(logicDeleteFieldInfo.getColumn()).append(EQ)
-				.append(logicDeleteFieldInfo.getLogicNotDeleteValue());
+			return alias + POINT + logicDeleteFieldInfo.getColumn() + EQ
+				+ logicDeleteFieldInfo.getLogicNotDeleteValue();
 		}
-		return sb.toString();
+		return "";
 	}
 
 	/**
@@ -236,12 +241,36 @@ public class JoinSqlParser {
 
 	/**
 	 * 构建查询字段列表
+	 * 当用户未指定查询字段时，默认查询主表所有列（带别名前缀），避免JOIN时同名列覆盖
 	 *
-	 * @param columns 选择的列
+	 * @param columns     用户指定的列
+	 * @param excludes    用户排除的列（列名，下划线格式）
+	 * @param entityClass 主表实体类型
+	 * @param alias       主表别名
 	 * @return 查询字段列表
 	 */
-	private List<String> buildSelectColumns(List<String> columns) {
-		return CollUtil.isEmpty(columns) ? CollUtil.newArrayList(SELECT_ALL) : columns;
+	private List<String> buildSelectColumns(List<String> columns, List<String> excludes, Class<?> entityClass, String alias) {
+		if (CollUtil.isNotEmpty(columns)) {
+			return columns;
+		}
+		// 排除字段集合（列名格式）
+		Set<String> excludeSet = CollUtil.isEmpty(excludes) ? Collections.emptySet() : new HashSet<>(excludes);
+		// 未指定字段时，根据主表实体生成 alias.column AS column 格式，避免JOIN同名列覆盖且保证MyBatis能正确映射
+		TableInfo tableInfo = TableInfoHelper.getTableInfo(entityClass);
+		if (tableInfo != null) {
+			List<String> result = new ArrayList<>();
+			String keyColumn = tableInfo.getKeyColumn();
+			if (!excludeSet.contains(keyColumn)) {
+				result.add(alias + POINT + keyColumn + " AS " + keyColumn);
+			}
+			for (TableFieldInfo field : tableInfo.getFieldList()) {
+				if (field.isSelect() && !excludeSet.contains(field.getColumn())) {
+					result.add(alias + POINT + field.getColumn() + " AS " + field.getColumn());
+				}
+			}
+			return result;
+		}
+		return CollUtil.newArrayList(SELECT_ALL);
 	}
 
 	/**
@@ -270,7 +299,8 @@ public class JoinSqlParser {
 	private void collectJoinWhereConditions(List<Muggle<?>> joins, List<String> whereConditions) {
 		for (Muggle<?> join : joins) {
 			QueryWrapper<?> joinWrapper = WrapperTranslator.translate(join);
-			String joinCondition = generateWhereCondition(joinWrapper, join.getAlias(), join.getEntityClass());
+			// join表的逻辑删除已在ON子句中处理，WHERE中只生成用户条件（不再追加逻辑删除）
+			String joinCondition = generateJoinWhereCondition(joinWrapper, join.getAlias(), join.getEntityClass());
 			if (StrUtil.isNotBlank(joinCondition)) {
 				whereConditions.add(joinCondition);
 			}
@@ -279,6 +309,27 @@ public class JoinSqlParser {
 				collectJoinWhereConditions(join.getJoins(), whereConditions);
 			}
 		}
+	}
+
+	/**
+	 * 生成联表的WHERE查询条件（不含逻辑删除，逻辑删除已在ON子句中处理）
+	 *
+	 * @param queryWrapper 查询条件封装
+	 * @param alias        表别名
+	 * @param clazz        实体类型
+	 * @return 拼接后的条件SQL
+	 */
+	private String generateJoinWhereCondition(QueryWrapper<?> queryWrapper, String alias, Class<?> clazz) {
+		String sqlSegment = queryWrapper.getExpression().getNormal().getSqlSegment();
+		if (StrUtil.isBlank(sqlSegment)) {
+			return "";
+		}
+		String whereCondition = AND + sqlSegment;
+		List<String> subQueries = CollUtil.newArrayList();
+		whereCondition = fillSqlParam(whereCondition, queryWrapper.getParamNameValuePairs());
+		whereCondition = protectNestedSubQueries(whereCondition, subQueries);
+		whereCondition = addColumnAlias(whereCondition, alias, clazz);
+		return restoreSubQueries(whereCondition, subQueries);
 	}
 
 	/**
@@ -302,10 +353,42 @@ public class JoinSqlParser {
 		String whereCondition = fillSqlParam(sb.toString(), queryWrapper.getParamNameValuePairs());
 		// 保护子查询sql
 		whereCondition = protectNestedSubQueries(whereCondition, subQueries);
-		// 使用JSQLParser进行SQL解析和字段别名替换
-		whereCondition = replaceColumnAliasesWithJSQLParser(whereCondition, alias);
+		// 基于实体元数据给无别名的列添加表别名前缀
+		whereCondition = addColumnAlias(whereCondition, alias, clazz);
 		// 恢复子查询
 		return restoreSubQueries(whereCondition, subQueries);
+	}
+
+	/**
+	 * 基于实体元数据，给WHERE条件中无别名前缀的列添加表别名
+	 *
+	 * @param sql   WHERE条件SQL
+	 * @param alias 表别名
+	 * @param clazz 实体类型
+	 * @return 添加别名后的SQL
+	 */
+	private String addColumnAlias(String sql, String alias, Class<?> clazz) {
+		if (StrUtil.isBlank(sql) || StrUtil.isBlank(alias)) {
+			return sql;
+		}
+		TableInfo tableInfo = TableInfoHelper.getTableInfo(clazz);
+		if (tableInfo == null) {
+			return sql;
+		}
+		// 收集实体所有列名（按长度倒序，优先替换长列名避免部分匹配）
+		List<String> columns = new ArrayList<>();
+		if (StrUtil.isNotBlank(tableInfo.getKeyColumn())) {
+			columns.add(tableInfo.getKeyColumn());
+		}
+		tableInfo.getFieldList().forEach(f -> columns.add(f.getColumn()));
+		columns.sort((a, b) -> b.length() - a.length());
+
+		String prefix = alias + POINT;
+		for (String col : columns) {
+			// 替换未带别名前缀的列：前面不能是字母、数字、下划线或点，后面不能是字母、数字或下划线
+			sql = sql.replaceAll("(?<![\\w.])" + col + "(?!\\w)", prefix + col);
+		}
+		return sql;
 	}
 
 	/**
@@ -424,22 +507,28 @@ public class JoinSqlParser {
 	 * @return String
 	 */
 	public String convertValueByType(Object obj) {
-		if (obj == null) {
-			return null;
-		}
-		if (obj instanceof String) {
-			return StrUtil.wrap(StringEscape.escapeRawString(obj.toString()), "'");
-		} else if (obj instanceof LocalDateTime) {
-			String dateStr = LocalDateTimeUtil.formatNormal((LocalDateTime) obj);
-			return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
-		} else if (obj instanceof LocalDate) {
-			String dateStr = LocalDateTimeUtil.formatNormal((LocalDate) obj);
-			return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
-		} else if (obj instanceof Date) {
-			String dateStr = DateUtil.formatDateTime((Date) obj);
-			return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
-		} else {
-			return obj.toString();
-		}
-	}
+        switch (obj) {
+            case null -> {
+                return null;
+            }
+            case String s -> {
+                return StrUtil.wrap(StringEscape.escapeRawString(obj.toString()), "'");
+            }
+            case LocalDateTime localDateTime -> {
+                String dateStr = LocalDateTimeUtil.formatNormal(localDateTime);
+                return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
+            }
+            case LocalDate localDate -> {
+                String dateStr = LocalDateTimeUtil.formatNormal(localDate);
+                return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
+            }
+            case Date date -> {
+                String dateStr = DateUtil.formatDateTime(date);
+                return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
+            }
+            default -> {
+                return obj.toString();
+            }
+        }
+    }
 }

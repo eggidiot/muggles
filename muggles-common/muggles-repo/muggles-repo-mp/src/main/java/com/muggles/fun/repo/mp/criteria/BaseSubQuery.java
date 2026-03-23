@@ -3,6 +3,7 @@ package com.muggles.fun.repo.mp.criteria;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -69,8 +70,12 @@ public class BaseSubQuery {
 			return JoinSqlParser.buildJoinSubQuerySql(param);
 		}
 		QueryWrapper<R> queryWrapper = WrapperTranslator.translate(param);
+		// 判断子查询是否包含查询条件（criterias、params、relations任意来源）
+		boolean hasCondition = CollUtil.isNotEmpty(param.getCriterias())
+				|| MapUtil.isNotEmpty(param.getParams())
+				|| CollUtil.isNotEmpty(param.getRelations());
 		// 把子查询queryWrapper转换成sql
-		String sql = buildSubQuerySql(queryWrapper, param.getEntityClass(), CollUtil.isNotEmpty(param.getCriterias()));
+		String sql = buildSubQuerySql(queryWrapper, param.getEntityClass(), hasCondition);
 		Map<String, Object> paramMap = queryWrapper.getParamNameValuePairs();
 		return fillSqlParam(sql, paramMap);
 	}
@@ -130,22 +135,6 @@ public class BaseSubQuery {
 	 * @return String
 	 */
 	private String convertValueByType(Object obj) {
-		if (obj == null) {
-			return null;
-		}
-		if (obj instanceof String) {
-			return StrUtil.wrap(StringEscape.escapeRawString(obj.toString()), "'");
-		} else if (obj instanceof LocalDateTime) {
-			String dateStr = LocalDateTimeUtil.formatNormal((LocalDateTime) obj);
-			return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
-		} else if (obj instanceof LocalDate) {
-			String dateStr = LocalDateTimeUtil.formatNormal((LocalDate) obj);
-			return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
-		} else if (obj instanceof Date) {
-			String dateStr = DateUtil.formatDateTime((Date) obj);
-			return StrUtil.wrap(StringEscape.escapeRawString(dateStr), "'");
-		} else {
-			return obj.toString();
-		}
+        return JoinSqlParser.convertValueByType(obj);
 	}
 }

@@ -9,12 +9,15 @@ import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInt
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.github.yitter.contract.IdGeneratorOptions;
 import com.github.yitter.idgen.YitIdHelper;
+import com.muggles.fun.basic.Constants;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
 
@@ -32,6 +35,18 @@ public class MybatisPlusConfig implements InitializingBean {
      */
     @Value("${worker-id:#{1}}")
     private Short workerId;
+
+    /**
+     * 设置selectors参数处理器
+     *
+     * @return SelectorHandler
+     */
+    @Bean
+    @Order(Constants.DEFAULT_ORDER)
+    @ConditionalOnProperty(name = "muggle.fill-selector.enabled", havingValue = "true", matchIfMissing = true)
+    public SelectorHandler selectorsHandler() {
+        return new SelectorHandler();
+    }
 
     /**
      * 默认自定义ID生成器

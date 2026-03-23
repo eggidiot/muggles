@@ -70,10 +70,9 @@ public class MpCriteria {
 	 *
 	 * @param key   扩展键
 	 * @param value 扩展参数
-	 * @return boolean
 	 */
-	public static boolean putCriteria(String key, Supplier<IGenCriteria> value) {
-		return Optional.ofNullable(value).map(v -> criteriaMap.putIfAbsent(key, v).equals(v)).orElse(false);
+	public static void putCriteria(String key, Supplier<IGenCriteria> value) {
+		Optional.ofNullable(value).map(v -> criteriaMap.putIfAbsent(key, v));
 	}
 
 	/**

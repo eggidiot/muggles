@@ -77,29 +77,38 @@ public interface CommonMapper<T> extends BaseMapper<T> {
 	/**
 	 * 联表查询列表
 	 * @param param	查询参数
-	 * @return	List<R>
-	 * @param <R>	泛型类型
+	 * @return	List<T>
 	 */
 	@Select("<script>" + "SELECT " + "<foreach collection='joiner.selectColumns' item='item' separator=','>"
 			+ "${item} " + "</foreach>" + "FROM ${joiner.joinSql}" + " WHERE 1=1 "
 			+ "<foreach collection='joiner.whereConditions' item='condition' separator=''>" + "${condition}" + "</foreach>"
 			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
 			+ "</script>")
-	<R>List<R> queryJoinList(@Param("joiner") Muggle<R> param);
+	List<T> queryJoinList(@Param("joiner") Muggle<T> param);
 
+	/**
+	 * 联表查询列表（返回Map，用于复合对象查询）
+	 * @param param	查询参数
+	 * @return	List<Map<String, Object>>
+	 */
+	@Select("<script>" + "SELECT " + "<foreach collection='joiner.selectColumns' item='item' separator=','>"
+			+ "${item} " + "</foreach>" + "FROM ${joiner.joinSql}" + " WHERE 1=1 "
+			+ "<foreach collection='joiner.whereConditions' item='condition' separator=''>" + "${condition}" + "</foreach>"
+			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
+			+ "</script>")
+	List<Map<String, Object>> queryJoinMaps(@Param("joiner") Muggle<?> param);
 
 	/**
 	 * 联表查询分页
 	 *
 	 * @param page		分页对象
 	 * @param param		分页参数
-	 * @param <R>	泛型类型
 	 */
 	@Select("<script>" + "SELECT " + "<foreach collection='joiner.selectColumns' item='item' separator=','>"
 			+ "${item} " + "</foreach>" + "FROM ${joiner.joinSql}" + " WHERE 1=1 "
 			+ "<foreach collection='joiner.whereConditions' item='condition' separator=''>" + "${condition}" + "</foreach>"
 			+ "<foreach collection='joiner.groupByColumns' item='column' separator=',' open=' group by '>" + "${column}" + "</foreach>"
 			+ "</script>")
-	<R>Page<R> queryJoinPage(Page<R> page, @Param("joiner") Muggle<T> param);
+	Page<T> queryJoinPage(Page<T> page, @Param("joiner") Muggle<T> param);
 }
 

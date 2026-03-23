@@ -1,5 +1,6 @@
 package com.muggles.fun.repo.mp.service;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.muggles.fun.basic.model.IMugglePage;
@@ -11,6 +12,8 @@ import com.muggles.fun.repo.mp.join.JoinSqlParser;
 import com.muggles.fun.repo.mp.mapper.CommonMapper;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceImpl<M,T,Muggle<T>> implements IMuggleService<T> {
     /**
@@ -63,6 +66,23 @@ public class MpServiceImpl<M extends CommonMapper<T>, T> extends CommonServiceIm
         page.setCurrent(result.getCurrent())
                 .setSize(result.getSize()).setTotal(result.getTotal()).setPages(result.getPages()).setRecords(result.getRecords());
         return page;
+    }
+
+    /**
+     * 联表查询返回复合对象列表
+     * 支持返回非原表实体类型（如DTO、VO等复合对象）
+     *
+     * @param param      查询条件
+     * @param resultType 返回对象类型
+     * @param <R>        返回类型
+     * @return List<R>
+     */
+    public <R> List<R> listJoin(Muggle<?> param, Class<R> resultType) {
+        JoinSqlParser.buildJoinParam(param);
+        List<Map<String, Object>> maps = mapper().queryJoinMaps(param);
+        return maps.stream()
+                .map(m -> BeanUtil.toBean(m, resultType))
+                .collect(Collectors.toList());
     }
 
     /**

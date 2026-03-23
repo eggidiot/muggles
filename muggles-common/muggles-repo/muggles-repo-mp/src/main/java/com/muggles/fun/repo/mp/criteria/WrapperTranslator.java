@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.muggles.fun.basic.Constants;
 import com.muggles.fun.basic.exception.MugglesBizException;
 import com.muggles.fun.basic.model.MuggleParam;
 import com.muggles.fun.repo.basic.converter.ParamsConverter;
@@ -41,10 +42,12 @@ public class WrapperTranslator {
         if (table == null) {
             return CollUtil.newArrayList();
         }
-        return table.getFieldList().stream()
+        List<String> fields = CollUtil.newArrayList(table.getKeyProperty());
+        fields.addAll(table.getFieldList().stream()
                 .map(TableFieldInfo::getField)
                 .map(Field::getName)
-                .collect(Collectors.toList());
+                .toList());
+        return fields;
     }
 
     /**
@@ -55,6 +58,8 @@ public class WrapperTranslator {
      * @return Mp查询对象
      */
     public <T> QueryWrapper<T> translate(Muggle<T> muggle) {
+        //0.设置Mp的字段映射工具
+        muggle.setMapping(new MpFieldMapping<>());
         //1.处理查询条件成为mp查询条件
         QueryWrapper<T> wrapper = genCriterias(muggle);
         //2.处理子条件集合
@@ -247,7 +252,13 @@ public class WrapperTranslator {
     private <T> QueryWrapper<T> criterias(Class<T> entityClass, QueryWrapper<T> wrapper, List<QueryCriteria> criterias) {
         List<QueryCriteria> result = criteriaLimitByEntity(entityClass, criterias);
         if (CollUtil.isNotEmpty(result)) {
-            result.forEach(c -> MpCriteria.translate(wrapper, c));
+            result.forEach(c -> {
+                //根据条件的关系类型设置OR连接符
+                if (c.getRelation() == Constants.RelationType.OR) {
+                    wrapper.or();
+                }
+                MpCriteria.translate(wrapper, c);
+            });
         }
         return wrapper;
     }
@@ -335,9 +346,17 @@ public class WrapperTranslator {
         Assert.notNull(entityClass, () -> new MugglesBizException("指定实体类型不能为Null"));
         List<String> fieldNames = getEntityFieldNames(entityClass);
         if (CollUtil.isNotEmpty(fieldNames)) {
+            //构建列名集合，用于匹配已经转换为下划线格式的属性名（如Lambda方式添加的条件）
+            Map<String, String> columnMap = fieldNames.stream()
+                    .collect(Collectors.toMap(fn -> column(entityClass, fn), fn -> fn, (a, b) -> a));
             return fields.stream()
-                    .filter(f -> fieldNames.contains(f.getAttribute()))
-                    .map(f -> f.setAttribute(column(entityClass, f.getAttribute())))
+                    .filter(f -> fieldNames.contains(f.getAttribute()) || columnMap.containsKey(f.getAttribute()))
+                    .map(f -> {
+                        if (fieldNames.contains(f.getAttribute())) {
+                            f.setAttribute(column(entityClass, f.getAttribute()));
+                        }
+                        return f;
+                    })
                     .collect(Collectors.toList());
         }
         return fields;

@@ -801,7 +801,7 @@ public class Muggle<T> extends MuggleParam<T, Muggle<T>> {
      * @return  Muggle<T>
      */
     public Muggle<T> on(String attr1,String attr2,RelationType type) {
-        this.on.add(new OnCriteria(outAlias()+StrUtil.DOT+attr1,getAlias()+StrUtil.DOT+attr2,type));
+        this.on.add(new OnCriteria(attr1,attr2,type));
         return this;
     }
     /**
