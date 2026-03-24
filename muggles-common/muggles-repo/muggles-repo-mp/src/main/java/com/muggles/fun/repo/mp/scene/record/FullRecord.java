@@ -1,10 +1,9 @@
-package com.muggles.fun.repo.mp.record.scene;
+package com.muggles.fun.repo.mp.scene.record;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.Version;
-import com.muggles.fun.repo.mp.record.IdRecord;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,19 +1,15 @@
-package com.muggles.fun.repo.mp.record.scene;
+package com.muggles.fun.repo.mp.scene.record;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.muggles.fun.repo.mp.record.IdRecord;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 /**
- * 生命周期对象
- *
- * @param <T>
+ * 包含生命周期记录和功能性记录的属性
  */
-public class LifecycleRecord<T extends LifecycleRecord<T>> extends IdRecord<T> {
-
+public class LifecycleFuncRecord<T extends LifecycleFuncRecord<T>> extends FuncRecord<T> {
 	/**
 	 * 创建时间
 	 */

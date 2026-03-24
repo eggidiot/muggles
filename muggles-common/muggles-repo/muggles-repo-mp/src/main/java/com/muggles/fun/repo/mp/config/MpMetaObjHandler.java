@@ -3,7 +3,7 @@ package com.muggles.fun.repo.mp.config;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.muggles.fun.basic.Constants;
 import com.muggles.fun.core.context.UserContext;
-import com.muggles.fun.repo.mp.record.IdRecord;
+import com.muggles.fun.repo.mp.scene.record.IdRecord;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.ibatis.reflection.MetaObject;

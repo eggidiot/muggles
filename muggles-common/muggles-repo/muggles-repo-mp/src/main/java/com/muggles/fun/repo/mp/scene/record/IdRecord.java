@@ -1,4 +1,4 @@
-package com.muggles.fun.repo.mp.record;
+package com.muggles.fun.repo.mp.scene.record;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

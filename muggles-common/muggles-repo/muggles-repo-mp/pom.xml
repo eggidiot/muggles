@@ -33,6 +33,13 @@
             <version>${mp.version}</version>
         </dependency>
 
+        <!--mybatis-plus生成代码依赖-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>${mp.version}</version>
+        </dependency>
+
         <!--mybatis-plus-分页依赖-->
         <dependency>
             <groupId>com.baomidou</groupId>
