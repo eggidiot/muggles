@@ -1,5 +1,6 @@
 package com.muggles.fun.muggles.cache.basic;
 
+import com.muggles.fun.muggles.cache.CacheConstants;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;

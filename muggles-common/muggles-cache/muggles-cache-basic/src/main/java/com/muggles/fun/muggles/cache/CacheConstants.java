@@ -1,4 +1,4 @@
-package com.muggles.fun.muggles.cache.basic;
+package com.muggles.fun.muggles.cache;
 
 /**
  * 缓存常量
