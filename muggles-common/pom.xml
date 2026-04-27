@@ -20,5 +20,6 @@
         <module>muggles-core</module>
         <!--持久层模块-->
         <module>muggles-repo</module>
+        <module>muggles-cache</module>
     </modules>
 </project>
