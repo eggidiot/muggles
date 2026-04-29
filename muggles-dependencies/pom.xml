@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.3</version>
+        <version>4.0.6</version>
         <relativePath/>
         <!-- lookup parent from repository -->
     </parent>
@@ -34,8 +34,8 @@
         <oss.version>3.18.5</oss.version>
         <dubbo.version>3.3.6</dubbo.version>
         <canal.version>1.1.8</canal.version>
-        <spring.version>4.0.3</spring.version>
-        <spring-aop.version>3.5.11</spring-aop.version>
+        <spring.version>4.0.6</spring.version>
+        <spring-aop.version>3.5.14</spring-aop.version>
         <redisson.version>4.3.0</redisson.version>
         <kryo.version>5.6.2</kryo.version>
         <caffeine.version>4.0.0</caffeine.version>
